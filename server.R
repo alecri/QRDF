@@ -125,12 +125,14 @@ shinyServer(function(input, output){
      } else {
        as.xts(n_ts(), order.by = n_ts()[[input$time_unit]])
      }
-     dygraph(dataxts) %>% dyLegend(width = 700)
+     dygraph(dataxts) %>% dyLegend(width = 700) %>%
+       dyRangeSelector(dateWindow = input$drange)
    })
 
    output$tsplot_besok <- renderDygraph({
       dataxts <- as.xts(n_ts_besok(), order.by = n_ts_besok()[[input$time_unit_besok]])
-      dygraph(dataxts) %>% dyLegend(width = 700)
+      dygraph(dataxts) %>% dyLegend(width = 700) %>%
+        dyRangeSelector(dateWindow = input$drange_besok)
    })
       
    output$tsplot_bio <- renderDygraph({
@@ -146,7 +148,8 @@ shinyServer(function(input, output){
          }
          as.xts(n_ts_bio()[, varlist], order.by = n_ts_bio()[[input$time_unit_bio]])
       }
-      dygraph(dataxts) %>% dyLegend(width = 700)
+      dygraph(dataxts) %>% dyLegend(width = 700) %>%
+        dyRangeSelector(dateWindow = input$drange_bio)
    })
    
 
