@@ -1,7 +1,6 @@
 library(ggplot2)
 library(survival)
 library(plotly)
-library(RcmdrPlugin.KMggplot2)
 
 fit <- survfit(Surv(time, status) ~ sex, data = lung)
 fit1 <- survfit(Surv(time, status) ~ 1, data = subset(lung, sex == 1))
