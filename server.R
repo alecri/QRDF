@@ -95,7 +95,6 @@ shinyServer(function(input, output){
       }
       n_ts_bio
    })
-
    
    ## rendering table
    output$table <- renderDataTable({
@@ -154,14 +153,30 @@ shinyServer(function(input, output){
    })
    
    surv.data <- reactive({
-     surv.data_bio <- summary(survfit(Surv(time, status) ~ 1, 
-                                      data = subset(terapi_basdata, preparat == "Benepali")))
+     bio_km <- terapi_basdata %>%
+         filter(
+           time > 0,
+           ordinerat >= input$drange_km[1] & ordinerat <= input$drange_km[2],
+           (input$line_km == 0 | line_trt == input$line_km | (input$line_km == 3 & line_trt >= 3)),
+           (input$region_km == "All" | region == input$region_km),
+           (input$diagnos_km == "All" | dxcat == input$diagnos_km)
+           )
+     
      surv.data <- data.frame()
      surv.data <-rbind(
-       with(surv.data_bio, data.frame(preparat = "preparat", time, surv, upper, lower)),
-       with(surv.data_all, data.frame(preparat = "all", time, surv, upper, lower))
+       with(summary(survfit(Surv(time, status) ~ 1, data = bio_km)), data.frame(preparat = "All", time, surv, upper, lower))
      )
+     if (input$biologic_km != "All"){
+       surv.data <- rbind(surv.data,
+                          with(summary(survfit(Surv(time, status) ~ 1,
+                                               data = subset(bio_km, preparat == input$biologic_km))),
+                               data.frame(preparat = input$biologic_km, time, surv, upper, lower)))
+     }
      surv.data
+     })
+   
+   output$table_KM <- renderDataTable({
+     surv.data()
    })
    
    output$KM <- renderPlotly({

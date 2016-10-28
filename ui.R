@@ -122,12 +122,15 @@ shinyUI(
          selectInput("region_km", label = "Region",
                      choices = c("All", levels(basdata$region)), selected = "All"),
          selectInput("diagnos_km", label = "Diagnos",
-                     choices = c("All", unique(basdata$dxcat)), selected = "All")
+                     choices = c("All", as.character(unique(basdata$dxcat))), selected = "All")
        ),
        
        
        mainPanel(
-         plotlyOutput("KM")
+         tabsetPanel(type = "tabs",
+                     tabPanel("Plot", plotlyOutput("KM")),
+                     tabPanel("Table", dataTableOutput("table_KM"))
+                     )
        )
      ))
    )
