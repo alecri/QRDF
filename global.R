@@ -27,7 +27,7 @@ terapi_basdata <- merge(basdata, terapi, by = "patientkod")
 besok_basdata <- merge(basdata, besoksdata, by = "patientkod")
 
 
-##Alessio's version
+# #Alessio's version
 # creating variable for KM plot: 1) status; 2) time
 # terapi_basdata$status <- as.numeric(!is.na(terapi_basdata$utsatt) & terapi_basdata$avslutad != terapi_basdata$utsatt)
 # terapi_basdata$utsatt2 <- terapi_basdata$utsatt
@@ -50,10 +50,13 @@ besok_basdata <- merge(basdata, besoksdata, by = "patientkod")
 
 
 ##Daniela's version
-terapi_basdata$death<-as.Date(ifelse(terapi_basdata$avslutsorsak == levels(terapi_basdata$avslutsorsak)[1],terapi_basdata$avslutad,NA))
-terapi_basdata$status <-ifelse(!is.na(terapi_basdata$utsatt),1,0)
+terapi_basdata$death<-as.Date(ifelse(terapi_basdata$avslutsorsak == levels(terapi_basdata$avslutsorsak)[1],
+                                     terapi_basdata$avslutad, NA), origin = "1970-01-01")
+terapi_basdata$status <-ifelse(!is.na(terapi_basdata$utsatt), 1, 0)
 #table(terapi_basdata$status)
-terapi_basdata$status[which(terapi_basdata$death<terapi_basdata$utsatt)] <-0
+terapi_basdata$status[which(terapi_basdata$death < terapi_basdata$utsatt)] <-0
 #table(terapi_basdata$status)
-terapi_basdata$utsatt2<-as.Date(ifelse(terapi_basdata$status==1,terapi_basdata$utsatt,pmin(terapi_basdata$death,Sys.Date(),na.rm=T)))
+terapi_basdata$utsatt2<-as.Date(ifelse(terapi_basdata$status == 1, terapi_basdata$utsatt,
+                                       pmin(terapi_basdata$death, Sys.Date(), na.rm=T)), 
+                                origin="1970-01-01")
 terapi_basdata$time <- as.numeric(terapi_basdata$utsatt2 - terapi_basdata$ordinerat)
