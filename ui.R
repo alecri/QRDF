@@ -105,6 +105,30 @@ shinyUI(
    
    tabPanel(
      "Summary"
-   )
+   ),
+   
+   tabPanel(
+     "KM",
+     sidebarLayout(
+       sidebarPanel(
+         selectInput("biologic_km", label = "Biologic",
+                     choices = c("All", levels(terapi$preparat)), selected = "All"),
+         selectInput("line_km", label = "Line treatment",
+                     choices = c("All" = 0, "1" = 1, "2" = 2, "3+" = 3), selected = 0),
+         ## Age,
+         dateRangeInput("drange_km",
+                        label = "Range limit",
+                        start = "1999-01-01", end = Sys.Date()),
+         selectInput("region_km", label = "Region",
+                     choices = c("All", levels(basdata$region)), selected = "All"),
+         selectInput("diagnos_km", label = "Diagnos",
+                     choices = c("All", unique(basdata$dxcat)), selected = "All")
+       ),
+       
+       
+       mainPanel(
+         plotlyOutput("KM")
+       )
+     ))
    )
 )

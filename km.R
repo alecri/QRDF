@@ -2,22 +2,17 @@ library(ggplot2)
 library(survival)
 library(plotly)
 
-fit <- survfit(Surv(time, status) ~ sex, data = lung)
-fit1 <- survfit(Surv(time, status) ~ 1, data = subset(lung, sex == 1))
-fit2 <- survfit(Surv(time, status) ~ 1, data = subset(lung, sex == 2))
-
-surv.data1 <- summary(fit1)
-surv.data2 <- summary(fit2)
+surv.data_bio <- summary(survfit(Surv(time, status) ~ 1, data = subset(terapi_basdata, preparat == "Benepali")))
+surv.data_all <- summary(survfit(Surv(time, status) ~ 1, data = terapi_basdata))
 surv.data <- data.frame()
-
 surv.data <-rbind(
-  with(surv.data1, data.frame(female = "female", time, surv, upper, lower)),
-  with(surv.data2, data.frame(female = "male", time, surv, upper, lower))
+  with(surv.data_bio, data.frame(preparat = "preparat", time, surv, upper, lower)),
+  with(surv.data_all, data.frame(preparat = "all", time, surv, upper, lower))
   )
 
 ggplotly(
-  ggplot(surv.data, aes(x = time, y = surv, col = female)) + 
-    geom_step() + 
-    geom_step(aes(y = lower), linetype = "dotted") +
-    geom_step(aes(y = upper), linetype = "dotted")
-  )
+  ggplot(surv.data, aes(x = time, y = surv, col = preparat)) + 
+    geom_step() 
+  #+geom_step(aes(y = lower), linetype = "dotted") +
+  #geom_step(aes(y = upper), linetype = "dotted")
+)

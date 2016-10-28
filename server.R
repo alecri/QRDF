@@ -4,7 +4,7 @@ library(lubridate)
 library(dygraphs)
 library(xts)
 library(plotly)
-
+library(survival)
 
 shinyServer(function(input, output){
    
@@ -152,6 +152,29 @@ shinyServer(function(input, output){
       dygraph(dataxts) %>% dyLegend(width = 700) %>%
         dyRangeSelector(dateWindow = input$drange_bio)
    })
+   
+   surv.data <- reactive({
+     surv.data_bio <- summary(survfit(Surv(time, status) ~ 1, 
+                                      data = subset(terapi_basdata, preparat == "Benepali")))
+     surv.data <- data.frame()
+     surv.data <-rbind(
+       with(surv.data_bio, data.frame(preparat = "preparat", time, surv, upper, lower)),
+       with(surv.data_all, data.frame(preparat = "all", time, surv, upper, lower))
+     )
+     surv.data
+   })
+   
+   output$KM <- renderPlotly({
+     ggplotly(
+       ggplot(surv.data(), aes(x = time, y = surv, col = preparat)) + 
+         geom_step() 
+       #+geom_step(aes(y = lower), linetype = "dotted") +
+       #geom_step(aes(y = upper), linetype = "dotted")
+     )
+   })
+
+      
+   
    
 
 })
