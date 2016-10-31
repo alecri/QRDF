@@ -53,8 +53,9 @@ shinyServer(function(input, output){
             inkluderad >= input$drange[1] & inkluderad <= input$drange[2],
                 (input$diagnos == "All" | (diagnos_kategori1 %in% input$diagnos &
                                            diagnos_1 %in% input$sub_diag))
-            #,
-            #(input$diagnos != "Reumatoid artrit och reumatoid artrit med underdiagnoser")
+            ,
+            (input$diagnos != "Reumatoid artrit och reumatoid artrit med underdiagnoser" |
+               !as.logical(input$tidig_ra*(tidig_ra == 0)))
             ) %>%
          ## it's maybe better to create this variable in global.R
          mutate(year = floor_date(inkluderad, "year"),
