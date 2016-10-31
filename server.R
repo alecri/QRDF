@@ -52,7 +52,10 @@ shinyServer(function(input, output){
          filter(#year(inkluderad) >= 1999,
             inkluderad >= input$drange[1] & inkluderad <= input$drange[2],
                 (input$diagnos == "All" | (diagnos_kategori1 %in% input$diagnos &
-                                           diagnos_1 %in% input$sub_diag))) %>%
+                                           diagnos_1 %in% input$sub_diag))
+            #,
+            #(input$diagnos != "Reumatoid artrit och reumatoid artrit med underdiagnoser")
+            ) %>%
          ## it's maybe better to create this variable in global.R
          mutate(year = floor_date(inkluderad, "year"),
                 month = floor_date(inkluderad, "month")) %>%
@@ -64,12 +67,12 @@ shinyServer(function(input, output){
       besok_basdata %>%
          ## exclude years before 1999 + interactive filtering
          filter(#year(inkluderad) >= 1999,
-                inkluderad >= input$drange_besok[1] & inkluderad <= input$drange_besok[2],
+                datum >= input$drange_besok[1] & datum <= input$drange_besok[2],
                 (input$diagnos_besok == "All" | (diagnos_kategori1 %in% input$diagnos_besok &
                                               diagnos_1 %in% input$sub_diag_besok))) %>%
          ## it's maybe better to create this variable in global.R
-         mutate(year = floor_date(inkluderad, "year"),
-                month = floor_date(inkluderad, "month")) %>%
+         mutate(year = floor_date(datum, "year"),
+                month = floor_date(datum, "month")) %>%
          group_by_(input$time_unit_besok) %>%
          summarize(number = n())
    })
@@ -78,7 +81,7 @@ shinyServer(function(input, output){
       n_ts_bio <- terapi_basdata %>%
          ## exclude years before 1999 + interactive filtering
          filter(#ar >= 1999,
-                inkluderad >= input$drange_bio[1] & inkluderad <= input$drange_bio[2],
+           ordinerat >= input$drange_bio[1] & ordinerat <= input$drange_bio[2],
                 (input$diagnos_bio == "All" | (diagnos_kategori1 %in% input$diagnos_bio &
                                                   diagnos_1.y %in% input$sub_diag_bio)),
                 (input$ongoing == FALSE | pagaende == 1)) %>%

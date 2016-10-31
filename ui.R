@@ -21,9 +21,11 @@ shinyUI(
             selectInput("diagnos", label = "Diagnos",
                            choices = c("All", levels(basdata$diagnos_kategori1)), multiple = FALSE,
                            selected = NULL),
+            conditionalPanel("input.diagnos == 'Reumatoid artrit och reumatoid artrit med underdiagnoser'",
+                             checkboxInput("tidig_ra", "Only early RA", FALSE)),
             uiOutput("diagnos_1"),
             selectInput("compare", label = "Comparison by",
-                        choices = list("none", "region", "kon", "tidig_ra"),
+                        choices = list("none", "region", "kon"),
                         selected = "none")
          ),
          
