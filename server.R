@@ -40,6 +40,25 @@ shinyServer(function(input, output){
       }
    })
    
+   ## for sliders
+   output$slideDate <- renderUI({
+     minValue <- ifelse(input$time_unit == "month", max(basdata$inkluderad, na.rm = T) - 365.25/12*15, "1999-01-01")
+     sliderInput("drange", "Range limit", min = as.Date(minValue), max = max(basdata$inkluderad, na.rm = T),
+                 value = c(as.Date(minValue), max(basdata$inkluderad, na.rm = T)))
+   })
+   output$slideDate_besok <- renderUI({
+     minValue <- ifelse(input$time_unit_besok == "month", max(terapi_basdata$ordinerat, na.rm = T) - 365.25/12*15, "1999-01-01")
+     sliderInput("drange_besok", "Range limit", min = as.Date(minValue), max = max(terapi_basdata$ordinerat, na.rm = T),
+                 value = c(as.Date(minValue), max(besok_basdata$inkluderad, na.rm = T)))
+   })
+   output$slideDate_bio <- renderUI({
+     minValue <- ifelse(input$time_unit_bio == "month", max(terapi_basdata$ordinerat, na.rm = T) - 365.25/12*15, "1999-01-01")
+     sliderInput("drange_bio", "Range limit", min = as.Date(minValue), max = max(terapi_basdata$ordinerat, na.rm = T),
+                 value = c(as.Date(minValue), max(terapi_basdata$ordinerat, na.rm = T)))
+   })
+   
+   
+   
    n_ts <- reactive({
       group_bylist <- if (input$compare != "none"){
          c(input$time_unit, input$compare)
@@ -50,10 +69,8 @@ shinyServer(function(input, output){
       basdata %>%
          ## exclude years before 1999 + interactive filtering
          filter(#year(inkluderad) >= 1999,
-            inkluderad >= input$drange[1] & inkluderad <= input$drange[2],
                 (input$diagnos == "All" | (diagnos_kategori1 %in% input$diagnos &
-                                           diagnos_1 %in% input$sub_diag))
-            ,
+                                           diagnos_1 %in% input$sub_diag)),
             (input$diagnos != "Reumatoid artrit och reumatoid artrit med underdiagnoser" |
                !as.logical(input$tidig_ra*(tidig_ra == 0)))
             ) %>%
@@ -61,31 +78,44 @@ shinyServer(function(input, output){
          mutate(year = floor_date(inkluderad, "year"),
                 month = floor_date(inkluderad, "month")) %>%
          group_by_(.dots = group_bylist) %>%
-         summarize(number = n())
+         summarize(number = n()) %>% 
+        filter_(paste(input$time_unit, c(">= \'", "<= \'"), floor_date(input$drange, "month"), "\'"))
    })
    
    n_ts_besok <- reactive({
+     group_bylist <- if (input$compare_besok != "none"){
+       c(input$time_unit_bio, input$compare_besok)
+     } else {
+       c(input$time_unit_bio)
+     }
+     
       besok_basdata %>%
          ## exclude years before 1999 + interactive filtering
          filter(#year(inkluderad) >= 1999,
-                datum >= input$drange_besok[1] & datum <= input$drange_besok[2],
+           datum <= Sys.Date(),
                 (input$diagnos_besok == "All" | (diagnos_kategori1 %in% input$diagnos_besok &
-                                              diagnos_1 %in% input$sub_diag_besok))) %>%
+                                              diagnos_1 %in% input$sub_diag_besok)),
+           (input$diagnos_besok != "Reumatoid artrit och reumatoid artrit med underdiagnoser" |
+              !as.logical(input$tidig_ra_besok*(tidig_ra == 0)))
+           ) %>%
          ## it's maybe better to create this variable in global.R
          mutate(year = floor_date(datum, "year"),
                 month = floor_date(datum, "month")) %>%
-         group_by_(input$time_unit_besok) %>%
-         summarize(number = n())
+        group_by_(.dots = group_bylist) %>%
+         summarize(number = n()) %>% 
+       filter_(paste(input$time_unit_besok, c(">= \'", "<= \'"), floor_date(input$drange_besok, "month"), "\'"))
    })
    
    n_ts_bio <- reactive({
       n_ts_bio <- terapi_basdata %>%
          ## exclude years before 1999 + interactive filtering
          filter(#ar >= 1999,
-           ordinerat >= input$drange_bio[1] & ordinerat <= input$drange_bio[2],
                 (input$diagnos_bio == "All" | (diagnos_kategori1 %in% input$diagnos_bio &
                                                   diagnos_1.y %in% input$sub_diag_bio)),
-                (input$ongoing == FALSE | pagaende == 1)) %>%
+                #(input$ongoing == FALSE | pagaende == 1),
+                (input$diagnos_bio != "Reumatoid artrit och reumatoid artrit med underdiagnoser" |
+                   !as.logical(input$tidig_ra_bio*(tidig_ra == 0)))
+                ) %>%
          mutate(year = floor_date(ordinerat, "year"),
                 month = floor_date(ordinerat, "month")) %>%
          group_by_(input$time_unit_bio, "preparat") %>%
@@ -97,7 +127,8 @@ shinyServer(function(input, output){
          n_ts_bio <- n_ts_bio %>% group_by_(input$time_unit_bio) %>%
             summarise(total = sum(number))
       }
-      n_ts_bio
+      n_ts_bio %>% 
+        filter_(paste(input$time_unit_bio, c(">= \'", "<= \'"), floor_date(input$drange_bio, "month"), "\'"))
    })
    
    ## rendering table
@@ -114,16 +145,7 @@ shinyServer(function(input, output){
    ## rendering plot
    output$tsplot <- renderDygraph({
       
-      # color <- if (input$comp_region){
-      #    "region"
-      # } else {
-      #    NULL
-      # }
-      # n_ts() %>%
-      #    ggplot(aes_string(x = input$time_unit, y = "number", color = color)) +
-      #    geom_line() + theme_bw() + ylab("Number of patients")
-     
-     dataxts <- if (input$compare != "none"){
+    dataxts <- if (input$compare != "none"){
        nts <- n_ts() %>% spread_(input$compare, "number")
        as.xts(nts, order.by = nts[[input$time_unit]])
      } else {
@@ -134,8 +156,15 @@ shinyServer(function(input, output){
    })
 
    output$tsplot_besok <- renderDygraph({
-      dataxts <- as.xts(n_ts_besok(), order.by = n_ts_besok()[[input$time_unit_besok]])
-      dygraph(dataxts) %>% dyLegend(width = 700) %>%
+     
+     dataxts <- if (input$compare_besok != "none"){
+       nts <- n_ts_besok() %>% spread_(input$compare_besok, "number")
+       as.xts(nts, order.by = nts[[input$time_unit_besok]])
+     } else {
+       as.xts(n_ts_besok(), order.by = n_ts_besok()[[input$time_unit_besok]])
+     }
+     
+     dygraph(dataxts) %>% dyLegend(width = 700) %>%
         dyRangeSelector(dateWindow = input$drange_besok)
    })
       
