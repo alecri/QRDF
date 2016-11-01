@@ -41,3 +41,11 @@ terapi_basdata$time <- as.numeric(terapi_basdata$utsatt2 - terapi_basdata$ordine
 
 ## Fix 
 bio2015<-subset(bio, (pagaende==1 & ordinerat<"2016-01-01") | (pagaende==0 & utsatt>="2016-01-01" & utsatt<="2016-01-01"))
+
+
+prova <- terapi_basdata %>%
+  mutate(year = floor_date(ordinerat, "year"),
+         month = floor_date(ordinerat, "month")) 
+
+x = split(prova, prova$year)[[7]]
+#x$pagaende==1 & x$ordinerat < "2016-01-01") | (pagaende==0 & utsatt>="2016-01-01" & utsatt<="2016-01-01")
