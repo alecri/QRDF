@@ -79,14 +79,14 @@ shinyServer(function(input, output){
                 month = floor_date(inkluderad, "month")) %>%
          group_by_(.dots = group_bylist) %>%
          summarize(number = n()) %>% 
-        filter_(paste(input$time_unit, c(">= \'", "<= \'"), floor_date(input$drange, "month"), "\'"))
+        filter_(paste(input$time_unit, c(">= \'", "<= \'"), floor_date(input$drange, input$time_unit), "\'"))
    })
    
    n_ts_besok <- reactive({
      group_bylist <- if (input$compare_besok != "none"){
-       c(input$time_unit_besok, input$compare_besok)
+       c(input$time_unit_bio, input$compare_besok)
      } else {
-       c(input$time_unit_besok)
+       c(input$time_unit_bio)
      }
      
       besok_basdata %>%
@@ -103,7 +103,7 @@ shinyServer(function(input, output){
                 month = floor_date(datum, "month")) %>%
         group_by_(.dots = group_bylist) %>%
          summarize(number = n()) %>% 
-       filter_(paste(input$time_unit_besok, c(">= \'", "<= \'"), floor_date(input$drange_besok, "month"), "\'"))
+       filter_(paste(input$time_unit_besok, c(">= \'", "<= \'"), floor_date(input$drange_besok, input$time_unit_besok), "\'"))
    })
    
    n_ts_bio <- reactive({
@@ -128,7 +128,36 @@ shinyServer(function(input, output){
             summarise(total = sum(number))
       }
       n_ts_bio %>% 
-        filter_(paste(input$time_unit_bio, c(">= \'", "<= \'"), floor_date(input$drange_bio, "month"), "\'"))
+        filter_(paste(input$time_unit_bio, c(">= \'", "<= \'"), floor_date(input$drange_bio, input$time_unit_bio), "\'"))
+   })
+   
+   pagaende <- reactive({
+     drange <- floor_date(input$drange_bio, input$time_unit_bio)
+     dates <- seq(drange[1], drange[2], by = input$time_unit_bio)
+
+     pagaende <- do.call("rbind", lapply(dates, function(x)
+       terapi_basdata %>%
+       mutate(time_level = x) %>%
+       filter(
+         (input$diagnos_bio == "All" | (diagnos_kategori1 %in% input$diagnos_bio &
+                                          diagnos_1.y %in% input$sub_diag_bio)),
+         #(input$diagnos_bio != "Reumatoid artrit och reumatoid artrit med underdiagnoser" |
+         #   !as.logical(input$tidig_ra_bio*(tidig_ra == 0))),
+         (ordinerat <= x) & (utsatt > x | pagaende == 1)
+       ) %>%
+       group_by_("time_level", "preparat") %>%
+       summarize(number = n()) %>%
+       group_by_("time_level") %>% mutate(total = sum(number)) %>%
+       filter(input$biologic == "All" | preparat == input$biologic)
+       )
+     )
+
+     if (input$biologic == "All"){
+       pagaende <- pagaende %>% group_by_("time_level") %>%
+         summarise(total = sum(number))
+     }
+     pagaende %>%
+       rename_(.dots=setNames("time_level", input$time_unit_bio))
    })
    
    ## rendering table
@@ -139,7 +168,11 @@ shinyServer(function(input, output){
       n_ts_besok()
    })
    output$table_bio <- renderDataTable({
-      n_ts_bio()
+     if (input$ongoing == FALSE){
+       n_ts_bio()
+     } else {
+       pagaende()
+     }
    })
    
    ## rendering plot
@@ -169,8 +202,13 @@ shinyServer(function(input, output){
    })
       
    output$tsplot_bio <- renderDygraph({
-      dataxts <- if (input$biologic == "All"){
-         as.xts(n_ts_bio()[, "total"], order.by = n_ts_bio()[[input$time_unit_bio]])
+     data_bio <- if (input$ongoing == FALSE){
+       n_ts_bio()
+     } else {
+       pagaende()
+     }
+     dataxts <- if (input$biologic == "All"){
+         as.xts(data_bio[, "total"], order.by = data_bio[[input$time_unit_bio]])
       } else {
          varlist <- if (input$biologic != "All"){
             if (input$showall == TRUE){
@@ -179,7 +217,7 @@ shinyServer(function(input, output){
                c("number")
             }
          }
-         as.xts(n_ts_bio()[, varlist], order.by = n_ts_bio()[[input$time_unit_bio]])
+         as.xts(data_bio[, varlist], order.by = data_bio[[input$time_unit_bio]])
       }
       dygraph(dataxts) %>% dyLegend(width = 700) %>%
         dyRangeSelector(dateWindow = input$drange_bio)
