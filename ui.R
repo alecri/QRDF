@@ -24,7 +24,7 @@ shinyUI(
                              checkboxInput("tidig_ra", "Only early RA", FALSE)),
             uiOutput("diagnos_1"),
             selectInput("compare", label = "Comparison by",
-                        choices = list("none", "region", "kon"),
+                        choices = list("none", "region", "kon", "age_inclusion_cat"),
                         selected = "none")
          ),
          
@@ -61,7 +61,7 @@ shinyUI(
                             checkboxInput("tidig_ra_besok", "Only early RA", FALSE)),
            uiOutput("diagnos_1_besok"),
            selectInput("compare_besok", label = "Comparison by",
-                       choices = list("none", "region", "kon"),
+                       choices = list("none", "region", "kon", "age_visit_cat"),
                        selected = "none")
         ),
         

@@ -15,22 +15,32 @@ basdata$dxcat[basdata$diagnoskod_1 %in% c("M46.8","M46.9","M08.1")] <- "SPA"
 basdata$dxcat[basdata$diagnoskod_1 %in% c("M07.0", "M07.1", "M07.2", "M07.3x+L40.5", 
                                           "M09.0", "M07.0+L40.5", "M07.1+L40.5", 
                                           "M07.2+L40.5")] <- "PSA"
+basdata$age_inclusion <- as.numeric(basdata$inkluderad - as.Date(basdata$fodelsedag))/365.25
+#summary(basdata$age_inclusion)
+basdata$age_inclusion_cat <- cut(basdata$age_inclusion, breaks =  c(18, 65, 100), right = FALSE)
 
-## date of death
+
+## age and categories for age
 basdata$deathdate <- basdata$avslutad
 basdata$deathdate[which(basdata$avslutsorsak != levels(basdata$avslutsorsak)[1] |
                           is.na(basdata$avslutsorsak))] <- NA
 
-## create categories for age ??
-# age = as.double((basdata$inkluderad - as.Date(basdata$fodelsedag))/365)
-# age[age <= 0] <- NA
-# summary(age[age < 43])
-# summary(basdata$debutalder)
+basdata$age_inclusion <- as.numeric(basdata$inkluderad - as.Date(basdata$fodelsedag))/365.25
+#summary(basdata$age_inclusion)
+basdata$age_inclusion_cat <- cut(basdata$age_inclusion, breaks =  c(18, 65, 100), right = FALSE)
+#table(basdata$age_inclusion_cat)
+
+
+## merge between besokdata and basdata
+besok_basdata <- merge(basdata, besoksdata, by = "patientkod")
+besok_basdata$age_visit <- as.numeric(besok_basdata$datum - as.Date(besok_basdata$fodelsedag))/365.25
+#summary(besok_basdata$age_visit)
+besok_basdata$age_visit_cat <- cut(besok_basdata$age_visit, breaks =  c(18, 65, 100), right = FALSE)
+#table(besok_basdata$age_visit_cat)
+
 
 ## merge between terapi and basdata
 terapi_basdata <- merge(basdata, terapi, by = "patientkod")
-## merge between besokdata and basdata
-besok_basdata <- merge(basdata, besoksdata, by = "patientkod")
 
 
 # creating variable for KM plot: 1) status; 2) time

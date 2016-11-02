@@ -79,7 +79,8 @@ shinyServer(function(input, output){
                 month = floor_date(inkluderad, "month")) %>%
          group_by_(.dots = group_bylist) %>%
          summarize(number = n()) %>% 
-        filter_(paste(input$time_unit, c(">= \'", "<= \'"), floor_date(input$drange, input$time_unit), "\'"))
+        filter_(paste(input$time_unit, c(">= \'", "<= \'"), floor_date(input$drange, input$time_unit), "\'")) %>%
+        na.omit()
    })
    
    n_ts_besok <- reactive({
@@ -103,7 +104,8 @@ shinyServer(function(input, output){
                 month = floor_date(datum, "month")) %>%
         group_by_(.dots = group_bylist) %>%
          summarize(number = n()) %>% 
-       filter_(paste(input$time_unit_besok, c(">= \'", "<= \'"), floor_date(input$drange_besok, input$time_unit_besok), "\'"))
+       filter_(paste(input$time_unit_besok, c(">= \'", "<= \'"), floor_date(input$drange_besok, input$time_unit_besok), "\'")) %>%
+        na.omit()
    })
    
    n_ts_bio <- reactive({
@@ -141,8 +143,8 @@ shinyServer(function(input, output){
        filter(
          (input$diagnos_bio == "All" | (diagnos_kategori1 %in% input$diagnos_bio &
                                           diagnos_1.y %in% input$sub_diag_bio)),
-         #(input$diagnos_bio != "Reumatoid artrit och reumatoid artrit med underdiagnoser" |
-         #   !as.logical(input$tidig_ra_bio*(tidig_ra == 0))),
+         (input$diagnos_bio != "Reumatoid artrit och reumatoid artrit med underdiagnoser" |
+           !as.logical(input$tidig_ra_bio*(tidig_ra == 0))),
          (ordinerat <= x) & (utsatt > x | pagaende == 1)
        ) %>%
        group_by_("time_level", "preparat") %>%
