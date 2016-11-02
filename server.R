@@ -84,9 +84,9 @@ shinyServer(function(input, output){
    
    n_ts_besok <- reactive({
      group_bylist <- if (input$compare_besok != "none"){
-       c(input$time_unit_bio, input$compare_besok)
+       c(input$time_unit_besok, input$compare_besok)
      } else {
-       c(input$time_unit_bio)
+       c(input$time_unit_besok)
      }
      
       besok_basdata %>%
