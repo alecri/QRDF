@@ -127,7 +127,7 @@ shinyUI(
          selectInput("region_km", label = "Region",
                      choices = c("All", levels(basdata$region)), selected = "All"),
          selectInput("diagnos_km", label = "Diagnos",
-                     choices = c("All", as.character(unique(basdata$dxcat))), selected = "All")
+                     choices = c("All", levels(basdata$dxcat)), selected = "All")
        ),
        
        
@@ -149,7 +149,7 @@ shinyUI(
                         label = "Range limit",
                         start = "1999-01-01", end = Sys.Date()),
          selectInput("diagnos_charcs", label = "Diagnos",
-                     choices = c("All", as.character(unique(basdata$dxcat))), selected = "All"),
+                     choices = c("All", levels(basdata$dxcat)), selected = "All"),
          ## Time of analysis,
          selectInput("sex_charcs", label = "Sex",
                      choices = c("All", levels(terapi$kon)), selected = "All"),

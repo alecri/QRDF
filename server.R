@@ -85,9 +85,9 @@ shinyServer(function(input, output){
    
    n_ts_besok <- reactive({
      group_bylist <- if (input$compare_besok != "none"){
-       c(input$time_unit_bio, input$compare_besok)
+       c(input$time_unit_besok, input$compare_besok)
      } else {
-       c(input$time_unit_bio)
+       c(input$time_unit_besok)
      }
      
       besok_basdata %>%
@@ -114,7 +114,6 @@ shinyServer(function(input, output){
          filter(#ar >= 1999,
                 (input$diagnos_bio == "All" | (diagnos_kategori1 %in% input$diagnos_bio &
                                                   diagnos_1.y %in% input$sub_diag_bio)),
-                #(input$ongoing == FALSE | pagaende == 1),
                 (input$diagnos_bio != "Reumatoid artrit och reumatoid artrit med underdiagnoser" |
                    !as.logical(input$tidig_ra_bio*(tidig_ra == 0)))
                 ) %>%
@@ -255,7 +254,7 @@ shinyServer(function(input, output){
    output$KM <- renderPlotly({
      ggplotly(
        ggplot(surv.data(), aes(x = time, y = surv, col = preparat)) + 
-         geom_step() 
+         geom_step() + xlab("Days")
        #+geom_step(aes(y = lower), linetype = "dotted") +
        #geom_step(aes(y = upper), linetype = "dotted")
      )

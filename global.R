@@ -15,6 +15,7 @@ basdata$dxcat[basdata$diagnoskod_1 %in% c("M46.8","M46.9","M08.1")] <- "SPA"
 basdata$dxcat[basdata$diagnoskod_1 %in% c("M07.0", "M07.1", "M07.2", "M07.3x+L40.5", 
                                           "M09.0", "M07.0+L40.5", "M07.1+L40.5", 
                                           "M07.2+L40.5")] <- "PSA"
+basdata$dxcat <- as.factor(basdata$dxcat)
 basdata$age_inclusion <- as.numeric(basdata$inkluderad - as.Date(basdata$fodelsedag))/365.25
 #summary(basdata$age_inclusion)
 basdata$age_inclusion_cat <- cut(basdata$age_inclusion, breaks =  c(18, 65, 100), right = FALSE)
@@ -41,6 +42,9 @@ besok_basdata$age_visit_cat <- cut(besok_basdata$age_visit, breaks =  c(18, 65, 
 
 ## merge between terapi and basdata
 terapi_basdata <- merge(basdata, terapi, by = "patientkod")
+terapi_basdata$age_ordinerat <- as.numeric(terapi_basdata$ordinerat - as.Date(terapi_basdata$fodelsedag))/365.25
+#summary(basdata$age_inclusion)
+terapi_basdata$age_ordinerat_cat <- cut(terapi_basdata$age_ordinerat, breaks =  c(18, 65, 100), right = FALSE)
 
 
 # creating variable for KM plot: 1) status; 2) time
@@ -49,14 +53,3 @@ terapi_basdata$status[which(terapi_basdata$deathdate <= terapi_basdata$utsatt)] 
 terapi_basdata$utsatt2 <- terapi_basdata$utsatt
 terapi_basdata$utsatt2[terapi_basdata$status == 0] <- pmin(terapi_basdata$deathdate[terapi_basdata$status == 0], Sys.Date(), na.rm=T)
 terapi_basdata$time <- as.numeric(terapi_basdata$utsatt2 - terapi_basdata$ordinerat)
-
-## Fix 
-# bio2015<-subset(bio, (pagaende==1 & ordinerat<"2016-01-01") | (pagaende==0 & utsatt>="2016-01-01" & utsatt<="2016-01-01"))
-# 
-# 
-# prova <- terapi_basdata %>%
-#   mutate(year = floor_date(ordinerat, "year"),
-#          month = floor_date(ordinerat, "month")) 
-# 
-# x = split(prova, prova$year)[[7]]
-# #x$pagaende==1 & x$ordinerat < "2016-01-01") | (pagaende==0 & utsatt>="2016-01-01" & utsatt<="2016-01-01")
