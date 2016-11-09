@@ -42,20 +42,36 @@ shinyServer(function(input, output){
    
    ## for sliders
    output$slideDate <- renderUI({
-     minValue <- ifelse(input$time_unit == "month", max(basdata$inkluderad, na.rm = T) - 365.25/12*15, "1999-01-01")
-     sliderInput("drange", "Range limit", min = as.Date(minValue), max = max(basdata$inkluderad, na.rm = T),
-                 value = c(as.Date(minValue), max(basdata$inkluderad, na.rm = T)))
+     minValue <- ifelse(input$time_unit == "month", Sys.Date() - 365.25*3, "1999-01-01")
+     sliderInput("drange", "Range limit", min = as.Date("1999-01-01"), max = (Sys.Date() - 1),
+                 value = c(as.Date(minValue), (Sys.Date() - 1)))
    })
    output$slideDate_besok <- renderUI({
-     minValue <- ifelse(input$time_unit_besok == "month", max(terapi_basdata$ordinerat, na.rm = T) - 365.25/12*15, "1999-01-01")
-     sliderInput("drange_besok", "Range limit", min = as.Date(minValue), max = max(terapi_basdata$ordinerat, na.rm = T),
-                 value = c(as.Date(minValue), max(besok_basdata$inkluderad, na.rm = T)))
+     minValue <- ifelse(input$time_unit_besok == "month", Sys.Date() - 365.25*3, "1999-01-01")
+     sliderInput("drange_besok", "Range limit", min = as.Date("1999-01-01"), max = (Sys.Date() - 1),
+                 value = c(as.Date(minValue), (Sys.Date() - 1)))
    })
    output$slideDate_bio <- renderUI({
-     minValue <- ifelse(input$time_unit_bio == "month", max(terapi_basdata$ordinerat, na.rm = T) - 365.25/12*15, "1999-01-01")
-     sliderInput("drange_bio", "Range limit", min = as.Date(minValue), max = max(terapi_basdata$ordinerat, na.rm = T),
-                 value = c(as.Date(minValue), max(terapi_basdata$ordinerat, na.rm = T)))
+     minValue <- ifelse(input$time_unit_bio == "month", Sys.Date() - 365.25*3, "1999-01-01")
+     sliderInput("drange_bio", "Range limit", min = as.Date("1999-01-01"), max = (Sys.Date() - 1),
+                 value = c(as.Date(minValue), (Sys.Date() - 1)))
    })
+   
+#    output$slideDate <- renderUI({
+#      minValue <- ifelse(input$time_unit == "month", max(basdata$inkluderad, na.rm = T) - 365.25/12*15, "1999-01-01")
+#      sliderInput("drange", "Range limit", min = as.Date(minValue), max = max(basdata$inkluderad, na.rm = T),
+#                  value = c(as.Date(minValue), max(basdata$inkluderad, na.rm = T)))
+#    })
+#    output$slideDate_besok <- renderUI({
+#      minValue <- ifelse(input$time_unit_besok == "month", max(terapi_basdata$ordinerat, na.rm = T) - 365.25/12*15, "1999-01-01")
+#      sliderInput("drange_besok", "Range limit", min = as.Date(minValue), max = max(terapi_basdata$ordinerat, na.rm = T),
+#                  value = c(as.Date(minValue), max(besok_basdata$inkluderad, na.rm = T)))
+#    })
+#    output$slideDate_bio <- renderUI({
+#      minValue <- ifelse(input$time_unit_bio == "month", max(terapi_basdata$ordinerat, na.rm = T) - 365.25/12*15, "1999-01-01")
+#      sliderInput("drange_bio", "Range limit", min = as.Date(minValue), max = max(terapi_basdata$ordinerat, na.rm = T),
+#                  value = c(as.Date(minValue), max(terapi_basdata$ordinerat, na.rm = T)))
+#    })
    
    
    
