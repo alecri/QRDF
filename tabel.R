@@ -1,4 +1,5 @@
 library(lazyeval)
+rm(list = ls())
 
 input <- list(biologic_charcs = "Cimzia",
               drange_charcs = c(as.Date("2015-01-01"), as.Date("2015-12-31")),
@@ -6,7 +7,8 @@ input <- list(biologic_charcs = "Cimzia",
               sex_charcs = "All",
               age_cat_charcs = "All",
               region_char_cs = "All",
-              median_charcs = "iqr")
+              median_charcs = "iqr",
+              time_anal = "0")
 
 ## apply filter to terapi_basdata
 
@@ -27,29 +29,37 @@ n_charcs_besok <- n_charcs_besok %>%
   filter(datum >= (ordinerat - 7) & datum <= utsatt) %>%
   mutate(
     diff = as.double(datum - ordinerat),
-    time_anal = cut(diff, breaks = c(-7, 30, 120, 365, 730, 1095), 
+    time_anal = cut(diff, breaks = c(-7, 30, 120, 365, 730, 1095, max(diff, na.rm = T)),
+                    #labels = c(0, 75, 240, 547, 912, 1460),
                     include.lowest = T, right = T))
 
 
 baseline <- n_charcs_besok %>% filter(time_anal == "[-7,30]")
 
 
-list_charcs <- c("age_ordinerat", "eq5d", "smarta", "patients_globala", "lakarbedoming",
-                 "sr", "crp", "haq")
-# "patients_globala", "smarta"
-additional_charcs <- c(list_charcs, "svullna_leder", "omma_leder", "das28", "das28CRP")
-additional_charcs2 <- c(list_charcs, "svullna_leder66", "omma_leder68", "basdai",
-                        "asdas_sr", "asdas_crp")
-
 baseline$smarta <- as.numeric(as.character(baseline$smarta))
 
-prova <- lapply(list_charcs, function(chr){
-  baseline %>%
+
+library(reshape2)
+
+medians <- lapply(list_charcs, function(chr){
+  n_charcs %>%
     filter_(paste0("!is.na(", chr, ")")) %>%
-    arrange(patientkod, abs(diff-0)) %>%
+    arrange(patientkod, abs(diff - as.numeric(input$time_anal))) %>%
     filter(!duplicated(patientkod)) %>%
-    group_by(line_trt) %>%
-    select_(chr, "line_trt") %>%
-    summarise_(median = interp(~ median(var), var = as.name(chr)))
+    group_by(line_trt_cat) %>%
+    select_(chr, "line_trt_cat") %>%
+    summarise_(median = interp(~ median(var), var = as.name(chr)),
+               n_complete = interp(~ sum(!is.na(var)), var = as.name(chr))) %>%
+    mutate(var_char = chr) %>% 
+    gather(key, val, median, n_complete) %>%
+    unite(var_char, line_trt_cat, key, sep = "") %>% 
+    spread(var_char, val) %>%
+    mutate(var_char = chr) %>%
+    select(var_char, contains("median"), contains("n_complete"))
 })
-names(prova) <- list_charcs
+
+prova = do.call("rbind", medians)
+
+library(xtable)
+xtable(prova)
