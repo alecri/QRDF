@@ -24,7 +24,10 @@ shinyUI(
                              checkboxInput("tidig_ra", "Only early RA", FALSE)),
             uiOutput("diagnos_1"),
             selectInput("compare", label = "Comparison by",
-                        choices = list("none", "region", "kon", "age_inclusion_cat"),
+                        choices = c("No comparison" = "none",
+                                    "Region" = "region", 
+                                    "Gender" = "kon",
+                                    "Age at inclusion in SRQ" = "age_inclusion_cat"),
                         selected = "none")
          ),
          
@@ -37,7 +40,12 @@ shinyUI(
                         tabPanel("Plot", dygraphOutput("tsplot")), 
                         tabPanel("Table", dataTableOutput("table")),
                         tabPanel("Summary", 
-                                 p("Some text"))
+                                 p(""),
+                                 p("Number of patients registered in the Swedish Rheumatology Register by month. Possibility to have the numbers by year."),
+                                 p("Patients can be classified according to their diagnosis: the groups and the single diagnoses in the list are the same that the doctor can chose when registering a patient"),
+                                 p("In the graph there is the possibility of comparing patients by gender, region of treatment and age (18-65 vs. 65+)")
+                                 
+                                 )
             )
          )
       )
@@ -61,7 +69,10 @@ shinyUI(
                             checkboxInput("tidig_ra_besok", "Only early RA", FALSE)),
            uiOutput("diagnos_1_besok"),
            selectInput("compare_besok", label = "Comparison by",
-                       choices = list("none", "region", "kon", "age_visit_cat"),
+                       choices = c("No comparison" = "none",
+                       "Region" = "region", 
+                       "Gender" = "kon",
+                       "Age at inclusion in SRQ" = "age_inclusion_cat"),
                        selected = "none")
         ),
         
@@ -87,8 +98,8 @@ shinyUI(
                        selected = "month"),
            h2("Subset"), 
            uiOutput("slideDate_bio"),
-           radioButtons("ongoing", "On going",
-                        c("All"= FALSE, "Only on going"= TRUE)
+           radioButtons("ongoing", "Number of",
+                        c("started treatments"= FALSE, "ongoing treatments"= TRUE)
            ),
            selectInput("diagnos_bio", label = "Diagnos",
                        choices = c("All", levels(terapi_basdata$diagnos_kategori1)), multiple = FALSE,
@@ -96,7 +107,7 @@ shinyUI(
            conditionalPanel("input.diagnos_bio == 'Reumatoid artrit och reumatoid artrit med underdiagnoser'",
                             checkboxInput("tidig_ra_bio", "Only early RA", FALSE)),
            uiOutput("diagnos_1_bio"),
-           conditionalPanel("input.biologic != 'All'", checkboxInput("showall", "Show Total", TRUE))
+           conditionalPanel("input.biologic != 'All'", checkboxInput("showall", "Show Total", FALSE))
         ),
 
         mainPanel(
