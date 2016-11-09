@@ -39,9 +39,11 @@ besok_basdata$age_visit <- as.numeric(besok_basdata$datum - as.Date(besok_basdat
 besok_basdata$age_visit_cat <- cut(besok_basdata$age_visit, breaks =  c(18, 65, 100), right = FALSE)
 #table(besok_basdata$age_visit_cat)
 
+##Data cleaning of therapy
+terapi2<-subset(terapi, preparat_kod != "PRV" & ordinerat >="1995-01-01")
 
 ## merge between terapi and basdata
-terapi_basdata <- merge(basdata, terapi, by = "patientkod")
+terapi_basdata <- merge(basdata, terapi2, by = "patientkod")
 terapi_basdata$age_ordinerat <- as.numeric(terapi_basdata$ordinerat - as.Date(terapi_basdata$fodelsedag))/365.25
 #summary(basdata$age_inclusion)
 terapi_basdata$age_ordinerat_cat <- cut(terapi_basdata$age_ordinerat, breaks =  c(18, 65, 100), right = FALSE)
