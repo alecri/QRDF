@@ -161,7 +161,6 @@ shinyUI(
                         start = "1999-01-01", end = Sys.Date()),
          selectInput("diagnos_charcs", label = "Diagnos",
                      choices = c("All", levels(basdata$dxcat)), selected = "All"),
-         ## Time of analysis,
          selectInput("sex_charcs", label = "Sex",
                      choices = c("All", levels(terapi$kon)), selected = "All"),
          selectInput("age_cat_charcs", label = "Age",
@@ -169,6 +168,9 @@ shinyUI(
          selectInput("region_char_cs", label = "Region",
                      choices = c("All", levels(basdata$region)), selected = "All"),
          ## Duration of disease,
+         selectInput("time_anal", "Time of analysis",
+                     choices = c("[-7, 30]" = 0, "75" = 75, "240" = 240, "547" = 547, 
+                                 "912" = 912, "1460" = 1460), selected = 0),
          radioButtons("median_charcs", "Show median together with:",
                       choices = c("Interquartile range" = "iqr", "No. of non missing"))
        ),
@@ -176,7 +178,7 @@ shinyUI(
        
        mainPanel(
          tabsetPanel(type = "tabs",
-                     tabPanel("Table", dataTableOutput("table_charcs")),
+                     tabPanel("Table", htmlOutput("table_charcs")), 
                      tabPanel("Summary",
                               p("Some text"))
          )

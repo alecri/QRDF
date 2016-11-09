@@ -31,6 +31,13 @@ basdata$age_inclusion <- as.numeric(basdata$inkluderad - as.Date(basdata$fodelse
 basdata$age_inclusion_cat <- cut(basdata$age_inclusion, breaks =  c(18, 65, 100), right = FALSE)
 #table(basdata$age_inclusion_cat)
 
+## from factor to double
+besoksdata$smarta <- as.numeric(sub(",", ".", as.character(besoksdata$smarta)))
+besoksdata$patientens_globala <- as.numeric(sub(",", ".", as.character(besoksdata$patientens_globala)))
+
+## terapi line_trt categories
+terapi$line_trt_cat <- cut(terapi$line_trt, breaks = c(0, 1, 2, max(terapi$line_trt, na.rm = T)),
+                           labels = c("1", "2", "3+"))
 
 ## merge between besokdata and basdata
 besok_basdata <- merge(basdata, besoksdata, by = "patientkod")

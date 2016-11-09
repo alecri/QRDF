@@ -5,6 +5,9 @@ library(dygraphs)
 library(xts)
 library(plotly)
 library(survival)
+library(lazyeval)
+library(htmlTable)
+library(xtable)
 
 shinyServer(function(input, output){
    
@@ -57,6 +60,7 @@ shinyServer(function(input, output){
                  value = c(as.Date(minValue), (Sys.Date() - 1)))
    })
    
+<<<<<<< HEAD
 #    output$slideDate <- renderUI({
 #      minValue <- ifelse(input$time_unit == "month", max(basdata$inkluderad, na.rm = T) - 365.25/12*15, "1999-01-01")
 #      sliderInput("drange", "Range limit", min = as.Date(minValue), max = max(basdata$inkluderad, na.rm = T),
@@ -75,6 +79,22 @@ shinyServer(function(input, output){
    
    
    
+=======
+   ## variable to summarize in tab disease characteristics
+   list_charcs <- reactive({
+     list_charcs <- list("eq5d", "smarta", "patientens_globala", "lakarbedomning",
+                         "sr", "crp", "haq")
+     if (input$diagnos_charcs %in% c("RA", "PSA")){
+       list_charcs <- c(list_charcs, "svullna_leder", "omma_leder", "das28", "das28CRP")
+     }
+     if (input$diagnos_charcs %in% c("SPA", "AS")){
+       list_charcs <- c(list_charcs, "svullna_leder66", "omma_leder68", "basdai",
+                        "asdas_sr", "asdas_crp")
+     }
+     list_charcs
+   })
+
+>>>>>>> da7ef6371427cde0599fe019f652e4c9135f641e
    n_ts <- reactive({
       group_bylist <- if (input$compare != "none"){
          c(input$time_unit, input$compare)
@@ -176,7 +196,48 @@ shinyServer(function(input, output){
      pagaende %>%
        rename_(.dots=setNames("time_level", input$time_unit_bio))
    })
+
+   medians_charcs <- reactive({
+     if (input$biologic_charcs == "") return(NULL)
+     n_charcs <- terapi_basdata %>%
+       filter(
+         (preparat == input$biologic_charcs),
+         (ordinerat >= input$drange_charcs[1] & ordinerat <= input$drange_charcs[2]),
+         (input$diagnos_charcs == "All" | (dxcat %in% input$diagnos_charcs)),
+         (input$sex_charcs == "All" | kon.x == input$sex_charcs),
+         (input$age_cat_charcs == "All" | age_ordinerat_cat == input$age_cat_charcs),
+         (input$region_char_cs == "All" | region == input$region_char_cs)
+       ) %>% 
+       merge(besoksdata, by = "patientkod") %>%
+       filter(datum >= (ordinerat - 7) & datum <= utsatt) %>%
+       mutate(
+         diff = as.double(datum - ordinerat),
+         time_anal = cut(diff, breaks = c(-7, 30, 120, 365, 730, 1095, max(diff, na.rm = T)),
+                         labels = c(0, 75, 240, 547, 912, 1460),
+                         include.lowest = T, right = T)) %>%
+       filter(time_anal == as.character(input$time_anal))
+     
+     medians <- lapply(list_charcs(), function(chr){
+       n_charcs %>%
+         filter_(paste0("!is.na(", chr, ")")) %>%
+         arrange(patientkod, abs(diff - as.numeric(input$time_anal))) %>%
+         filter(!duplicated(patientkod)) %>%
+         group_by(line_trt_cat) %>%
+         select_(chr, "line_trt_cat") %>%
+         summarise_(median = interp(~ median(var), var = as.name(chr)),
+                    n_complete = interp(~ sum(!is.na(var)), var = as.name(chr))) %>%
+         mutate(var_char = chr) %>% 
+         gather(key, val, median, n_complete) %>%
+         unite(var_char, line_trt_cat, key, sep = "") %>% 
+         spread(var_char, val) %>%
+         mutate(var_char = chr) %>%
+         select(var_char, contains("median"), contains("n_complete"))
+     })
+
+     do.call("rbind", medians)
+   })
    
+      
    ## rendering table
    output$table <- renderDataTable({
       n_ts()
@@ -271,13 +332,20 @@ shinyServer(function(input, output){
      ggplotly(
        ggplot(surv.data(), aes(x = time, y = surv, col = preparat)) + 
          geom_step() + xlab("Days")
-       #+geom_step(aes(y = lower), linetype = "dotted") +
-       #geom_step(aes(y = upper), linetype = "dotted")
      )
    })
-
-      
    
-   
+   #includeCSS("www/table1.css")
+   output$table_charcs <- renderText({
+     if (input$biologic_charcs == "") return(NULL)
+     # htmlTable(medians_charcs(),
+     #           header =  c("", rep(c("1", "2", "3+"), 2)),
+     #           n.cgroup = c(1, 3, 3),
+     #           cgroup = c("Variables", "Median", "N complete")
+     # )
+     print(xtable(medians_charcs()), type = "html",
+           include.rownames = FALSE)
+   }
+   )
 
 })
