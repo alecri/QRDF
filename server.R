@@ -60,7 +60,7 @@ shinyServer(function(input, output){
                  value = c(as.Date(minValue), (Sys.Date() - 1)))
    })
    
-<<<<<<< HEAD
+
 #    output$slideDate <- renderUI({
 #      minValue <- ifelse(input$time_unit == "month", max(basdata$inkluderad, na.rm = T) - 365.25/12*15, "1999-01-01")
 #      sliderInput("drange", "Range limit", min = as.Date(minValue), max = max(basdata$inkluderad, na.rm = T),
@@ -77,9 +77,7 @@ shinyServer(function(input, output){
 #                  value = c(as.Date(minValue), max(terapi_basdata$ordinerat, na.rm = T)))
 #    })
    
-   
-   
-=======
+
    ## variable to summarize in tab disease characteristics
    list_charcs <- reactive({
      list_charcs <- list("eq5d", "smarta", "patientens_globala", "lakarbedomning",
@@ -94,7 +92,7 @@ shinyServer(function(input, output){
      list_charcs
    })
 
->>>>>>> da7ef6371427cde0599fe019f652e4c9135f641e
+
    n_ts <- reactive({
       group_bylist <- if (input$compare != "none"){
          c(input$time_unit, input$compare)
@@ -186,7 +184,7 @@ shinyServer(function(input, output){
        summarize(number = n()) %>%
        group_by_("time_level") %>% mutate(total = sum(number)) %>%
        filter(input$biologic == "All" | preparat == input$biologic)
-       )
+     )
      )
 
      if (input$biologic == "All"){
