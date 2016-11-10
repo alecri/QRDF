@@ -11,7 +11,10 @@ library(xtable)
 
 shinyServer(function(input, output){
    
-   ## for subdiagnosis
+  ## interactive user interfaces
+  ## -----------------------------------------------------------------------------------------------------------------------
+  
+  ## diagnosis
    output$diagnos_1 <- renderUI({
       if (is.null(input$diagnos)){
          return(NULL)
@@ -60,39 +63,11 @@ shinyServer(function(input, output){
                  value = c(as.Date(minValue), (Sys.Date() - 1)))
    })
    
-
-#    output$slideDate <- renderUI({
-#      minValue <- ifelse(input$time_unit == "month", max(basdata$inkluderad, na.rm = T) - 365.25/12*15, "1999-01-01")
-#      sliderInput("drange", "Range limit", min = as.Date(minValue), max = max(basdata$inkluderad, na.rm = T),
-#                  value = c(as.Date(minValue), max(basdata$inkluderad, na.rm = T)))
-#    })
-#    output$slideDate_besok <- renderUI({
-#      minValue <- ifelse(input$time_unit_besok == "month", max(terapi_basdata$ordinerat, na.rm = T) - 365.25/12*15, "1999-01-01")
-#      sliderInput("drange_besok", "Range limit", min = as.Date(minValue), max = max(terapi_basdata$ordinerat, na.rm = T),
-#                  value = c(as.Date(minValue), max(besok_basdata$inkluderad, na.rm = T)))
-#    })
-#    output$slideDate_bio <- renderUI({
-#      minValue <- ifelse(input$time_unit_bio == "month", max(terapi_basdata$ordinerat, na.rm = T) - 365.25/12*15, "1999-01-01")
-#      sliderInput("drange_bio", "Range limit", min = as.Date(minValue), max = max(terapi_basdata$ordinerat, na.rm = T),
-#                  value = c(as.Date(minValue), max(terapi_basdata$ordinerat, na.rm = T)))
-#    })
    
-
-   ## variable to summarize in tab disease characteristics
-   list_charcs <- reactive({
-     list_charcs <- list("eq5d", "smarta", "patientens_globala", "lakarbedomning",
-                         "sr", "crp", "haq")
-     if (input$diagnos_charcs %in% c("RA", "PSA")){
-       list_charcs <- c(list_charcs, "svullna_leder", "omma_leder", "das28", "das28CRP")
-     }
-     if (input$diagnos_charcs %in% c("SPA", "AS")){
-       list_charcs <- c(list_charcs, "svullna_leder66", "omma_leder68", "basdai",
-                        "asdas_sr", "asdas_crp")
-     }
-     list_charcs
-   })
-
-
+   
+   ## reactive computations
+   ## -----------------------------------------------------------------------------------------------------------------------
+   
    n_ts <- reactive({
       group_bylist <- if (input$compare != "none"){
          c(input$time_unit, input$compare)
@@ -194,7 +169,52 @@ shinyServer(function(input, output){
      pagaende %>%
        rename_(.dots=setNames("time_level", input$time_unit_bio))
    })
+   
+   surv.data <- reactive({
+     bio_km <- terapi_basdata %>%
+       filter(
+         time > 0,
+         utsatt2 <= Sys.Date(),
+         ordinerat >= input$drange_km[1] & ordinerat <= input$drange_km[2],
+         (input$line_km == 0 | line_trt == input$line_km | (input$line_km == 3 & line_trt >= 3)),
+         (input$region_km == "All" | region == input$region_km),
+         (input$diagnos_km == "All" | dxcat == input$diagnos_km),
+         (input$sex_km == "All" | kon.x == input$sex_km),
+         (input$age_cat_km == "All" | age_ordinerat_cat == input$age_cat_km)
+       )
+     
+     if (input$biologic_km != "All"){
+       datemin_drug <- min(bio_km$ordinerat[bio_km$preparat == input$biologic_km])
+       bio_km <- bio_km %>% filter(ordinerat >= datemin_drug)
+     }
+     
+     surv.data <- data.frame()
+     surv.data <- rbind(
+       with(summary(survfit(Surv(time, status) ~ 1, data = bio_km)), data.frame(preparat = "All", time, surv, upper, lower))
+     )
+     if (input$biologic_km != "All"){
+       surv.data <- rbind(surv.data,
+                          with(summary(survfit(Surv(time, status) ~ 1,
+                                               data = subset(bio_km, preparat == input$biologic_km))),
+                               data.frame(preparat = input$biologic_km, time, surv, upper, lower)))
+     }
+     surv.data
+   })
 
+   ## variable to summarize in tab disease characteristics
+   list_charcs <- reactive({
+     list_charcs <- list("eq5d", "smarta", "patientens_globala", "lakarbedomning",
+                         "sr", "crp", "haq")
+     if (input$diagnos_charcs %in% c("RA", "PSA")){
+       list_charcs <- c(list_charcs, "svullna_leder", "omma_leder", "das28", "das28CRP")
+     }
+     if (input$diagnos_charcs %in% c("SPA", "AS")){
+       list_charcs <- c(list_charcs, "svullna_leder66", "omma_leder68", "basdai",
+                        "asdas_sr", "asdas_crp")
+     }
+     list_charcs
+   })
+   
    medians_charcs <- reactive({
      if (input$biologic_charcs == "") return(NULL)
      n_charcs <- terapi_basdata %>%
@@ -215,7 +235,7 @@ shinyServer(function(input, output){
                          include.lowest = T, right = T)) %>%
        filter(time_anal == as.character(input$time_anal))
      
-     medians <- lapply(list_charcs(), function(chr){
+     medians <- do.call("rbind", lapply(list_charcs(), function(chr){
        n_charcs %>%
          filter_(paste0("!is.na(", chr, ")")) %>%
          arrange(patientkod, abs(diff - as.numeric(input$time_anal))) %>%
@@ -223,19 +243,43 @@ shinyServer(function(input, output){
          group_by(line_trt_cat) %>%
          select_(chr, "line_trt_cat") %>%
          summarise_(median = interp(~ median(var), var = as.name(chr)),
-                    n_complete = interp(~ sum(!is.na(var)), var = as.name(chr))) %>%
+                    n_complete = interp(~ sum(!is.na(var)), var = as.name(chr)),
+                    iqr_low = interp(~ quantile(var, probs = .25, na.rm = T), var = as.name(chr)),
+                    iqr_upp = interp(~ quantile(var, probs = .75, na.rm = T), var = as.name(chr))
+         ) %>%
          mutate(var_char = chr) %>% 
-         gather(key, val, median, n_complete) %>%
+         gather(key, val, median, n_complete, iqr_low, iqr_upp) %>%
          unite(var_char, line_trt_cat, key, sep = "") %>% 
          spread(var_char, val) %>%
          mutate(var_char = chr) %>%
-         select(var_char, contains("median"), contains("n_complete"))
-     })
-
-     do.call("rbind", medians)
+         select(var_char, contains("median"), contains("n_complete"), contains("iqr"))
+     }))
+     
+     medians <- as.data.frame(
+       do.call("cbind", lapply(1:3, function(line){
+         index <- medians[, grep(line, names(medians))]
+         if (length(index) == 0) median <- NA
+         if (input$median_charcs == "iqr"){
+           index <- index[-grep("n_", names(index))]
+           median <- apply(index, 1, function(x){
+             paste0(x[1], " (", x[2], "-", x[3], ")")
+           })
+         } else {
+           index <- index[-grep("iqr", names(index))]
+           median <- apply(index, 1, function(x){
+             paste0(x[1], " (", x[2], ")")
+           })
+         }
+       }))
+     )
+     colnames(medians) <- c("1st line", "2nd line", "3+line")
+     medians
    })
    
-      
+
+   ## rendering output
+   ## -----------------------------------------------------------------------------------------------------------------------
+   
    ## rendering table
    output$table <- renderDataTable({
       n_ts()
@@ -299,28 +343,6 @@ shinyServer(function(input, output){
         dyRangeSelector(dateWindow = input$drange_bio)
    })
    
-   surv.data <- reactive({
-     bio_km <- terapi_basdata %>%
-         filter(
-           time > 0,
-           ordinerat >= input$drange_km[1] & ordinerat <= input$drange_km[2],
-           (input$line_km == 0 | line_trt == input$line_km | (input$line_km == 3 & line_trt >= 3)),
-           (input$region_km == "All" | region == input$region_km),
-           (input$diagnos_km == "All" | dxcat == input$diagnos_km)
-           )
-     
-     surv.data <- data.frame()
-     surv.data <-rbind(
-       with(summary(survfit(Surv(time, status) ~ 1, data = bio_km)), data.frame(preparat = "All", time, surv, upper, lower))
-     )
-     if (input$biologic_km != "All"){
-       surv.data <- rbind(surv.data,
-                          with(summary(survfit(Surv(time, status) ~ 1,
-                                               data = subset(bio_km, preparat == input$biologic_km))),
-                               data.frame(preparat = input$biologic_km, time, surv, upper, lower)))
-     }
-     surv.data
-     })
    
    output$table_KM <- renderDataTable({
      surv.data()
@@ -334,15 +356,17 @@ shinyServer(function(input, output){
    })
    
    #includeCSS("www/table1.css")
-   output$table_charcs <- renderText({
+   #output$table_charcs <- renderText({
+   output$table_charcs <- renderDataTable({   
      if (input$biologic_charcs == "") return(NULL)
-     # htmlTable(medians_charcs(),
+     #htmlTable(medians_charcs())
      #           header =  c("", rep(c("1", "2", "3+"), 2)),
      #           n.cgroup = c(1, 3, 3),
      #           cgroup = c("Variables", "Median", "N complete")
      # )
-     print(xtable(medians_charcs()), type = "html",
-           include.rownames = FALSE)
+     # print(xtable(medians_charcs()), type = "html",
+     #       include.rownames = FALSE)
+     medians_charcs()
    }
    )
 

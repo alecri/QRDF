@@ -138,7 +138,11 @@ shinyUI(
          selectInput("region_km", label = "Region",
                      choices = c("All", levels(basdata$region)), selected = "All"),
          selectInput("diagnos_km", label = "Diagnos",
-                     choices = c("All", levels(basdata$dxcat)), selected = "All")
+                     choices = c("All", levels(basdata$dxcat)), selected = "All"),
+         selectInput("sex_km", label = "Sex",
+                     choices = c("All", levels(basdata$kon)), selected = "All"),
+         selectInput("age_cat_km", label = "Age",
+                     choices = c("All", "[18, 65)", "[65+"), selected = "All")
        ),
        
        
@@ -178,7 +182,8 @@ shinyUI(
        
        mainPanel(
          tabsetPanel(type = "tabs",
-                     tabPanel("Table", htmlOutput("table_charcs")), 
+                     tabPanel("Table", #htmlOutput("table_charcs")),
+                     dataTableOutput("table_charcs")),
                      tabPanel("Summary",
                               p("Some text"))
          )
