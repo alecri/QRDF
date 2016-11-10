@@ -255,7 +255,7 @@ shinyServer(function(input, output){
          select(var_char, contains("median"), contains("n_complete"), contains("iqr"))
      }))
      
-     medians <- as.data.frame(
+     medians <- cbind(variable = medians$var_char, as.data.frame(
        do.call("cbind", lapply(1:3, function(line){
          index <- medians[, grep(line, names(medians))]
          if (length(index) == 0) median <- NA
@@ -271,8 +271,8 @@ shinyServer(function(input, output){
            })
          }
        }))
-     )
-     colnames(medians) <- c("1st line", "2nd line", "3+line")
+     ))
+     colnames(medians) <- c("variable", "1st line", "2nd line", "3+line")
      medians
    })
    
