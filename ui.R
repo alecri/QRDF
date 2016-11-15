@@ -168,7 +168,7 @@ shinyUI(
          selectInput("sex_charcs", label = "Sex",
                      choices = c("All", levels(terapi$kon)), selected = "All"),
          selectInput("age_cat_charcs", label = "Age",
-                     choices = c("All", "[18, 65)", "[65+"), selected = "All"),
+                     choices = c("All", levels(terapi_basdata$age_ordinerat_cat)), selected = "All"),
          selectInput("region_char_cs", label = "Region",
                      choices = c("All", levels(basdata$region)), selected = "All"),
          ## Duration of disease,
@@ -185,7 +185,13 @@ shinyUI(
                      tabPanel("Table", #htmlOutput("table_charcs")),
                      dataTableOutput("table_charcs")),
                      tabPanel("Summary",
-                              p("Some text"))
+                              p("Some text")),
+                     tabPanel("Check1",
+                       dataTableOutput("table_charcs_all")
+                     ),
+                     tabPanel("Check2",
+                              dataTableOutput("table_median")
+                     )
          )
        )
      ))

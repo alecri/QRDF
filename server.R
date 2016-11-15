@@ -215,9 +215,9 @@ shinyServer(function(input, output){
      list_charcs
    })
    
-   medians_charcs <- reactive({
+   n_charcs <- reactive({
      if (input$biologic_charcs == "") return(NULL)
-     n_charcs <- terapi_basdata %>%
+     terapi_basdata %>%
        filter(
          (preparat == input$biologic_charcs),
          (ordinerat >= input$drange_charcs[1] & ordinerat <= input$drange_charcs[2]),
@@ -234,9 +234,13 @@ shinyServer(function(input, output){
                          labels = c(0, 75, 240, 547, 912, 1460),
                          include.lowest = T, right = T)) %>%
        filter(time_anal == as.character(input$time_anal))
-     
-     medians <- do.call("rbind", lapply(list_charcs(), function(chr){
-       n_charcs %>%
+   })
+   
+   medians <- reactive({
+     if (input$biologic_charcs == "") return(NULL)
+     if (nrow(n_charcs()) == 0L) return(NULL)
+     do.call("rbind", lapply(list_charcs(), function(chr){
+       n_charcs() %>%
          filter_(paste0("!is.na(", chr, ")")) %>%
          arrange(patientkod, abs(diff - as.numeric(input$time_anal))) %>%
          filter(!duplicated(patientkod)) %>%
@@ -254,10 +258,14 @@ shinyServer(function(input, output){
          mutate(var_char = chr) %>%
          select(var_char, contains("median"), contains("n_complete"), contains("iqr"))
      }))
-     
-     medians <- cbind(variable = medians$var_char, as.data.frame(
+   })
+   
+   medians_tab <- reactive({
+     if (input$biologic_charcs == "") return(NULL)
+     if (is.null(medians())) return(NULL)
+     medians <- cbind(variable = medians()$var_char, as.data.frame(
        do.call("cbind", lapply(1:3, function(line){
-         index <- medians[, grep(line, names(medians))]
+         index <- medians()[, grep(line, names(medians()))]
          if (length(index) == 0) median <- NA
          if (input$median_charcs == "iqr"){
            index <- index[-grep("n_", names(index))]
@@ -272,10 +280,28 @@ shinyServer(function(input, output){
          }
        }))
      ))
-     colnames(medians) <- c("variable", "1st line", "2nd line", "3+line")
+     ## adding additional info
+     summaries <- n_charcs() %>%
+       arrange(patientkod, abs(diff - as.numeric(input$time_anal))) %>%
+       filter(!duplicated(patientkod)) %>%
+       group_by(line_trt_cat) %>%
+       summarize(n = n(),
+                 median_age = median(age_ordinerat, na.rm = T),
+                 female = 100*mean(kon.x == "Kvinna"))
+     addinfo <- cbind(variable = colnames(summaries[-1]),
+           do.call("cbind", lapply(1:3, function(line){
+             index <- summaries[grep(line, summaries$line_trt_cat), ]
+             if (nrow(index) == 0){
+               c(NA, NA, NA)
+             } else {
+               t(index[-1])
+             }
+           })))
+     colnames(medians) <- colnames(addinfo) <- c("variable", "1st line", "2nd line", "3+line")
+     medians <- rbind(addinfo, medians)
      medians
    })
-   
+
 
    ## rendering output
    ## -----------------------------------------------------------------------------------------------------------------------
@@ -355,6 +381,15 @@ shinyServer(function(input, output){
      )
    })
    
+   output$table_charcs_all <- renderDataTable({
+     if (input$biologic_charcs == "") return(NULL)
+     n_charcs()
+   })
+   output$table_median <- renderDataTable({
+     if (input$biologic_charcs == "") return(NULL)
+     medians()
+   })
+   
    #includeCSS("www/table1.css")
    #output$table_charcs <- renderText({
    output$table_charcs <- renderDataTable({   
@@ -366,7 +401,7 @@ shinyServer(function(input, output){
      # )
      # print(xtable(medians_charcs()), type = "html",
      #       include.rownames = FALSE)
-     medians_charcs()
+     medians_tab()
    }
    )
 
