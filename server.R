@@ -62,6 +62,18 @@ shinyServer(function(input, output){
      sliderInput("drange_bio", "Range limit", min = as.Date("1999-01-01"), max = (Sys.Date() - 1),
                  value = c(as.Date(minValue), (Sys.Date() - 1)))
    })
+   output$slideDate_km <- renderUI({
+     minValue <- ifelse(input$biologic_km != "All", min(terapi_basdata$ordinerat[terapi_basdata$preparat == input$biologic_km]), "1999-01-01")
+     dateRangeInput("drange_km",
+                    label = "Range limit",
+                    start = minValue, end = Sys.Date())
+   })
+   output$slideDate_charcs <- renderUI({
+     minValue <- ifelse(input$biologic_km != "", min(terapi_basdata$ordinerat[terapi_basdata$preparat == input$biologic_km]), "1999-01-01")
+     dateRangeInput("drange_charcs",
+                    label = "Range limit",
+                    start = minValue, end = Sys.Date())
+   })
    
    
    
