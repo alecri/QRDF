@@ -66,13 +66,13 @@ shinyServer(function(input, output){
      minValue <- ifelse(input$biologic_km != "All", min(terapi_basdata$ordinerat[terapi_basdata$preparat == input$biologic_km]), "1999-01-01")
      dateRangeInput("drange_km",
                     label = "Range limit",
-                    start = minValue, end = Sys.Date())
+                    start = as.Date(minValue), end = Sys.Date())
    })
    output$slideDate_charcs <- renderUI({
-     minValue <- ifelse(input$biologic_km != "", min(terapi_basdata$ordinerat[terapi_basdata$preparat == input$biologic_km]), "1999-01-01")
+     minValue <- ifelse(input$biologic_charcs != "", min(terapi_basdata$ordinerat[terapi_basdata$preparat == input$biologic_charcs]), "1999-01-01")
      dateRangeInput("drange_charcs",
                     label = "Range limit",
-                    start = minValue, end = Sys.Date())
+                    start = as.Date(minValue), end = Sys.Date())
    })
    
    
@@ -298,8 +298,8 @@ shinyServer(function(input, output){
        filter(!duplicated(patientkod)) %>%
        group_by(line_trt_cat) %>%
        summarize(n = n(),
-                 median_age = median(age_ordinerat, na.rm = T),
-                 female = 100*mean(kon.x == "Kvinna"))
+                 median_age = round(median(age_ordinerat, na.rm = T), 2),
+                 female = round(100*mean(kon.x == "Kvinna"), 2))
      addinfo <- cbind(variable = colnames(summaries[-1]),
            do.call("cbind", lapply(1:3, function(line){
              index <- summaries[grep(line, summaries$line_trt_cat), ]

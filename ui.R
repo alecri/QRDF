@@ -8,6 +8,15 @@ shinyUI(
     "QRDF",
     
     tabPanel(
+      "Home",
+      h2("Welcome to the Quality Register Drug Follow up of the Swedish Rheumatology Quality Registers"),
+      br(),
+      p("Swedish Rheumatology Quality Registers (SRQ) comprise a cooperation between clinical registers in Swedish rheumatology participating in a national program for continuous follow up of patients for drug surveillance, clinical trials, health economics and clinical research and for health care quality improvement. SRQ works together with research driven pharmaceutical companies to improve patient health. To enable planning and design of specific research projects the character of the patient cohorts to be found in the SRQ database is displayed here. Data in SRQ is owned by the participating registers that perform the analyses in agreed studies aiming for scientific publication of the results.
+
+The data content overview displayed here comprises encoded data such as the register coverage in the population, total numbers of patients and visits, and numbers and type of patients treated with the class of immuno-modulating drugs in question and for each company such data on their own product(s)")
+    ),
+    
+    tabPanel(
       "Patients",
       
       sidebarLayout(
@@ -32,10 +41,10 @@ shinyUI(
          ),
          
          mainPanel(
-            ## Hide errors. Uncomment in the final version
-            # tags$style(type="text/css",
-            #            ".shiny-output-error { visibility: hidden; }",
-            #            ".shiny-output-error:before { visibility: hidden; }"),
+            # Hide errors. Uncomment in the final version
+            tags$style(type="text/css",
+                       ".shiny-output-error { visibility: hidden; }",
+                       ".shiny-output-error:before { visibility: hidden; }"),
             tabsetPanel(type = "tabs", 
                         tabPanel("Plot", dygraphOutput("tsplot")), 
                         tabPanel("Table", dataTableOutput("table")),
@@ -120,40 +129,6 @@ shinyUI(
            )
    )),
    
-   tabPanel(
-     "Summary"
-   ),
-   
-   tabPanel(
-     "KM",
-     sidebarLayout(
-       sidebarPanel(
-         selectInput("biologic_km", label = "Biologic",
-                     choices = c("All", levels(terapi$preparat)), selected = "All"),
-         selectInput("line_km", label = "Line treatment",
-                     choices = c("All" = 0, "1" = 1, "2" = 2, "3+" = 3), selected = 0),
-         uiOutput("slideDate_km"),
-         # dateRangeInput("drange_km",
-         #                label = "Range limit",
-         #                start = "1999-01-01", end = Sys.Date()),
-         selectInput("region_km", label = "Region",
-                     choices = c("All", levels(basdata$region)), selected = "All"),
-         selectInput("diagnos_km", label = "Diagnos",
-                     choices = c("All", levels(basdata$dxcat)), selected = "All"),
-         selectInput("sex_km", label = "Sex",
-                     choices = c("All", levels(basdata$kon)), selected = "All"),
-         selectInput("age_cat_km", label = "Age",
-                     choices = c("All", "[18, 65)", "[65+"), selected = "All")
-       ),
-       
-       
-       mainPanel(
-         tabsetPanel(type = "tabs",
-                     tabPanel("Plot", plotlyOutput("KM")),
-                     tabPanel("Table", dataTableOutput("table_KM"))
-                     )
-       )
-     )),
    
    tabPanel(
      "Disease characteristics",
@@ -185,17 +160,47 @@ shinyUI(
        mainPanel(
          tabsetPanel(type = "tabs",
                      tabPanel("Table", #htmlOutput("table_charcs")),
-                     dataTableOutput("table_charcs")),
+                              dataTableOutput("table_charcs")),
                      tabPanel("Summary",
-                              p("Some text")),
-                     tabPanel("Check1",
-                       dataTableOutput("table_charcs_all")
-                     ),
-                     tabPanel("Check2",
-                              dataTableOutput("table_median")
-                     )
+                              p("Some text"))
+#                      ,
+#                      tabPanel("Check1",
+#                               dataTableOutput("table_charcs_all")
+#                      ),
+#                      tabPanel("Check2",
+#                               dataTableOutput("table_median")
+#                      )
          )
        )
+     )),
+   
+   tabPanel(
+     "KM",
+     sidebarLayout(
+       sidebarPanel(
+         selectInput("biologic_km", label = "Biologic",
+                     choices = c("All", levels(terapi$preparat)), selected = "All"),
+         selectInput("line_km", label = "Line treatment",
+                     choices = c("All" = 0, "1" = 1, "2" = 2, "3+" = 3), selected = 0),
+         uiOutput("slideDate_km"),
+         selectInput("region_km", label = "Region",
+                     choices = c("All", levels(basdata$region)), selected = "All"),
+         selectInput("diagnos_km", label = "Diagnos",
+                     choices = c("All", levels(basdata$dxcat)), selected = "All"),
+         selectInput("sex_km", label = "Sex",
+                     choices = c("All", levels(basdata$kon)), selected = "All"),
+         selectInput("age_cat_km", label = "Age",
+                     choices = c("All", "[18, 65)", "[65+"), selected = "All")
+       ),
+       
+       
+       mainPanel(
+         tabsetPanel(type = "tabs",
+                     tabPanel("Plot", plotlyOutput("KM")),
+                     tabPanel("Table", dataTableOutput("table_KM"))
+                     )
+       )
      ))
+
    )
 )
