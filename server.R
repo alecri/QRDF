@@ -318,7 +318,7 @@ shinyServer(function(input, output){
    ## rendering output
    ## -----------------------------------------------------------------------------------------------------------------------
    
-   ## rendering table
+   ## rendering tables
    output$table <- renderDataTable({
       n_ts()
    })
@@ -332,8 +332,35 @@ shinyServer(function(input, output){
        pagaende()
      }
    })
+   output$table_KM <- renderDataTable({
+     surv.data()
+   })
    
-   ## rendering plot
+   output$table_charcs_all <- renderDataTable({
+     if (input$biologic_charcs == "") return(NULL)
+     n_charcs()
+   })
+   output$table_median <- renderDataTable({
+     if (input$biologic_charcs == "") return(NULL)
+     medians()
+   })
+   
+   #includeCSS("www/table1.css")
+   #output$table_charcs <- renderText({
+   output$table_charcs <- renderDataTable({   
+     if (input$biologic_charcs == "") return(NULL)
+     #htmlTable(medians_charcs())
+     #           header =  c("", rep(c("1", "2", "3+"), 2)),
+     #           n.cgroup = c(1, 3, 3),
+     #           cgroup = c("Variables", "Median", "N complete")
+     # )
+     # print(xtable(medians_charcs()), type = "html",
+     #       include.rownames = FALSE)
+     medians_tab()
+   }
+   )
+   
+   ## rendering plots
    output$tsplot <- renderDygraph({
       
     dataxts <- if (input$compare != "none"){
@@ -381,11 +408,6 @@ shinyServer(function(input, output){
         dyRangeSelector(dateWindow = input$drange_bio)
    })
    
-   
-   output$table_KM <- renderDataTable({
-     surv.data()
-   })
-   
    output$KM <- renderPlotly({
      ggplotly(
        ggplot(surv.data(), aes(x = time, y = surv, col = preparat)) + 
@@ -393,28 +415,59 @@ shinyServer(function(input, output){
      )
    })
    
-   output$table_charcs_all <- renderDataTable({
-     if (input$biologic_charcs == "") return(NULL)
-     n_charcs()
-   })
-   output$table_median <- renderDataTable({
-     if (input$biologic_charcs == "") return(NULL)
-     medians()
-   })
-   
-   #includeCSS("www/table1.css")
-   #output$table_charcs <- renderText({
-   output$table_charcs <- renderDataTable({   
-     if (input$biologic_charcs == "") return(NULL)
-     #htmlTable(medians_charcs())
-     #           header =  c("", rep(c("1", "2", "3+"), 2)),
-     #           n.cgroup = c(1, 3, 3),
-     #           cgroup = c("Variables", "Median", "N complete")
-     # )
-     # print(xtable(medians_charcs()), type = "html",
-     #       include.rownames = FALSE)
-     medians_tab()
-   }
-   )
 
+
+   
+   ## download tables
+   ## -----------------------------------------------------------------------------------------------------------------------
+   
+   output$downloadTab <- downloadHandler(
+     filename = function() {
+       paste('tab-', Sys.Date(), '.csv', sep = '')
+     },
+     content = function(con) {
+       write.csv(n_ts(), con)
+     }
+   )
+   
+   output$downloadTab_besok <- downloadHandler(
+     filename = function() {
+       paste('tab_besok-', Sys.Date(), '.csv', sep = '')
+     },
+     content = function(con) {
+       write.csv(n_ts_besok(), con)
+     }
+   )
+   
+   output$downloadTab_bio <- downloadHandler(
+     filename = function() {
+       paste('tab_bio-', Sys.Date(), '.csv', sep = '')
+     },
+     content = function(con) {
+       write.csv(if (input$ongoing == FALSE){
+         n_ts_bio()
+       } else {
+         pagaende()
+       }, con)
+     }
+   )
+   
+   output$downloadTab_km <- downloadHandler(
+     filename = function() {
+       paste('tab_km-', Sys.Date(), '.csv', sep = '')
+     },
+     content = function(con) {
+       write.csv(surv.data(), con)
+     }
+   )
+   
+   output$downloadTab_charcs <- downloadHandler(
+     filename = function() {
+       paste('tab_charcs-', Sys.Date(), '.csv', sep = '')
+     },
+     content = function(con) {
+       write.csv(medians_tab(), con)
+     }
+   )
+   
 })

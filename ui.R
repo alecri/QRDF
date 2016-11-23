@@ -45,9 +45,13 @@ The data content overview displayed here comprises encoded data such as the regi
             tags$style(type="text/css",
                        ".shiny-output-error { visibility: hidden; }",
                        ".shiny-output-error:before { visibility: hidden; }"),
-            tabsetPanel(type = "tabs", 
+            tabsetPanel(type = "tabs",
                         tabPanel("Plot", dygraphOutput("tsplot")), 
-                        tabPanel("Table", dataTableOutput("table")),
+                        tabPanel("Table", 
+                                 p(" "),
+                                 downloadButton('downloadTab', 'Download table'),
+                                 hr(),
+                                 dataTableOutput("table")),
                         tabPanel("Summary", 
                                  p(""),
                                  p("Number of patients registered in the Swedish Rheumatology Register by month. Possibility to have the numbers by year."),
@@ -88,7 +92,11 @@ The data content overview displayed here comprises encoded data such as the regi
         mainPanel(
            tabsetPanel(type = "tabs",
                        tabPanel("Plot", dygraphOutput("tsplot_besok")),
-                       tabPanel("Table", dataTableOutput("table_besok")),
+                       tabPanel("Table", 
+                                p(" "),
+                                downloadButton('downloadTab_besok', 'Download table'),
+                                hr(),
+                                dataTableOutput("table_besok")),
                        tabPanel("Summary",
                                 p("Some text"))
            )
@@ -122,7 +130,11 @@ The data content overview displayed here comprises encoded data such as the regi
         mainPanel(
            tabsetPanel(type = "tabs",
                        tabPanel("Plot", dygraphOutput("tsplot_bio")),
-                       tabPanel("Table", dataTableOutput("table_bio")),
+                       tabPanel("Table", 
+                                p(" "),
+                                downloadButton('downloadTab_bio', 'Download table'),
+                                hr(),
+                                dataTableOutput("table_bio")),
                        tabPanel("Summary",
                                 p("Some text"))
            )
@@ -161,6 +173,9 @@ The data content overview displayed here comprises encoded data such as the regi
        mainPanel(
          tabsetPanel(type = "tabs",
                      tabPanel("Table", #htmlOutput("table_charcs")),
+                              p(" "),
+                              downloadButton('downloadTab_charcs', 'Download table'),
+                              hr(),
                               dataTableOutput("table_charcs")),
                      tabPanel("Summary",
                               p("Some text"))
@@ -198,7 +213,11 @@ The data content overview displayed here comprises encoded data such as the regi
        mainPanel(
          tabsetPanel(type = "tabs",
                      tabPanel("Plot", plotlyOutput("KM")),
-                     tabPanel("Table", dataTableOutput("table_KM"))
+                     tabPanel("Table",  
+                              p(" "),
+                              downloadButton('downloadTab_km', 'Download table'),
+                              hr(),
+                              dataTableOutput("table_KM"))
                      )
        )
      ))
