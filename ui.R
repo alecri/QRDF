@@ -96,7 +96,7 @@ The data content overview displayed here comprises encoded data such as the regi
      )),
    
    tabPanel(
-     "Bio Compounds",
+     "Biologics",
 
      sidebarLayout(
         sidebarPanel(
@@ -150,8 +150,9 @@ The data content overview displayed here comprises encoded data such as the regi
                      choices = c("All", levels(basdata$region)), selected = "All"),
          ## Duration of disease,
          selectInput("time_anal", "Time of analysis",
-                     choices = c("[-7, 30]" = 0, "75" = 75, "240" = 240, "547" = 547, 
-                                 "912" = 912, "1460" = 1460), selected = 0),
+                     choices = c("Treatment start" = 0, #"75" = 75, 
+                                 "Follow-up 4-12 months" = 240, "Follow-up 13-24 months" = 547, 
+                                 "Follow-up 25-36 months" = 912, "Follow-up >36 months" = 1460), selected = 0),
          radioButtons("median_charcs", "Show median together with:",
                       choices = c("Interquartile range" = "iqr", "No. of non missing"))
        ),
@@ -190,7 +191,7 @@ The data content overview displayed here comprises encoded data such as the regi
          selectInput("sex_km", label = "Sex",
                      choices = c("All", levels(basdata$kon)), selected = "All"),
          selectInput("age_cat_km", label = "Age",
-                     choices = c("All", "[18, 65)", "[65+"), selected = "All")
+                     choices = c("All", levels(terapi_basdata$age_ordinerat_cat)), selected = "All")
        ),
        
        
