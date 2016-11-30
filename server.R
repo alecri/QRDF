@@ -81,11 +81,6 @@ shinyServer(function(input, output){
    ## -----------------------------------------------------------------------------------------------------------------------
    
    n_ts <- reactive({
-      group_bylist <- if (input$compare != "none"){
-         c(input$time_unit, input$compare)
-      } else {
-         c(input$time_unit)
-      }
 
       basdata %>%
          ## exclude years before 1999 + interactive filtering
@@ -93,15 +88,20 @@ shinyServer(function(input, output){
                 (input$diagnos == "All" | (diagnos_kategori1 %in% input$diagnos &
                                            diagnos_1 %in% input$sub_diag)),
             (input$diagnos != "Reumatoid artrit och reumatoid artrit med underdiagnoser" |
-               !as.logical(input$tidig_ra*(tidig_ra == 0)))
+               !as.logical(input$tidig_ra*(tidig_ra == 0))),
+            (input$sex == "All" | kon == input$sex),
+            (age_inclusion <= input$age[2] & age_inclusion >= input$age[1]),
+            (input$region == "All" | region == input$region)
             ) %>%
          ## it's maybe better to create this variable in global.R
          mutate(year = floor_date(inkluderad, "year"),
                 month = floor_date(inkluderad, "month")) %>%
-         group_by_(.dots = group_bylist) %>%
+         group_by_(input$time_unit) %>%
          summarize(number = n()) %>% 
         filter_(paste(input$time_unit, c(">= \'", "<= \'"), floor_date(input$drange, input$time_unit), "\'")) %>%
-        na.omit()
+        na.omit() %>%
+       # for privacy reasons
+       filter(input$region == "All" | number > 5)
    })
    
    n_ts_besok <- reactive({
@@ -320,7 +320,7 @@ shinyServer(function(input, output){
    
    ## rendering tables
    output$table <- renderDataTable({
-      n_ts()
+     n_ts()
    })
    output$table_besok <- renderDataTable({
       n_ts_besok()
@@ -363,12 +363,7 @@ shinyServer(function(input, output){
    ## rendering plots
    output$tsplot <- renderDygraph({
       
-    dataxts <- if (input$compare != "none"){
-       nts <- n_ts() %>% spread_(input$compare, "number")
-       as.xts(nts, order.by = nts[[input$time_unit]])
-     } else {
-       as.xts(n_ts(), order.by = n_ts()[[input$time_unit]])
-     }
+    dataxts <- as.xts(n_ts(), order.by = n_ts()[[input$time_unit]])
      dygraph(dataxts) %>% dyLegend(width = 700) %>%
        dyRangeSelector(dateWindow = input$drange)
    })

@@ -32,12 +32,12 @@ The data content overview displayed here comprises encoded data such as the regi
             conditionalPanel("input.diagnos == 'Reumatoid artrit och reumatoid artrit med underdiagnoser'",
                              checkboxInput("tidig_ra", "Only early RA", FALSE)),
             uiOutput("diagnos_1"),
-            selectInput("compare", label = "Comparison by",
-                        choices = c("No comparison" = "none",
-                                    "Region" = "region", 
-                                    "Gender" = "kon",
-                                    "Age at inclusion in SRQ" = "age_inclusion_cat"),
-                        selected = "none")
+            selectInput("sex", label = "Sex",
+                        choices = c("All", levels(basdata$kon)), selected = "All"),
+            sliderInput("age", "Age:", 
+                        min = 0, max = 110, value = c(18, 80), step= 1),
+            selectInput("region", label = "Region",
+                        choices = c("All", levels(basdata$region)), selected = "All")
          ),
          
          mainPanel(
