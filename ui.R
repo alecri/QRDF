@@ -164,14 +164,14 @@ shinyUI(
                       choices = c("All", levels(basdata$dxcat)), selected = "All"),
           selectInput("sex_charcs", label = "Sex",
                       choices = c("All", levels(terapi$kon)), selected = "All"),
-          selectInput("age_cat_charcs", label = "Age",
-                      choices = c("All", levels(terapi_basdata$age_ordinerat_cat)), selected = "All"),
+          sliderInput("age_charcs", "Age:", 
+                      min = 0, max = 110, value = c(18, 80), step= 1),
           selectInput("region_char_cs", label = "Region",
                       choices = c("All", levels(basdata$region)), selected = "All"),
           ## Duration of disease,
           selectInput("time_anal", "Time of analysis",
-                      choices = c("Treatment start" = 0, #"75" = 75, 
-                                  "Follow-up 4-12 months" = 240, "Follow-up 13-24 months" = 547, 
+                      choices = c("Treatment start" = 0, "Follow-up 3-8 months" = 150, 
+                                  "Follow-up 9-16 months" = 365, "Follow-up 17-24 months" = 600, 
                                   "Follow-up 25-36 months" = 912, "Follow-up >36 months" = 1460), selected = 0),
           radioButtons("median_charcs", "Show median together with:",
                        choices = c("Interquartile range" = "iqr", "No. of non missing"))
@@ -213,8 +213,8 @@ shinyUI(
                       choices = c("All", levels(basdata$dxcat)), selected = "All"),
           selectInput("sex_km", label = "Sex",
                       choices = c("All", levels(basdata$kon)), selected = "All"),
-          selectInput("age_cat_km", label = "Age",
-                      choices = c("All", levels(terapi_basdata$age_ordinerat_cat)), selected = "All")
+          sliderInput("age_km", "Age:", 
+                      min = 0, max = 110, value = c(18, 80), step= 1)
         ),
         
         

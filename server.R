@@ -198,7 +198,7 @@ shinyServer(function(input, output){
         (input$region_km == "All" | region == input$region_km),
         (input$diagnos_km == "All" | dxcat == input$diagnos_km),
         (input$sex_km == "All" | kon.x == input$sex_km),
-        (input$age_cat_km == "All" | age_ordinerat_cat == input$age_cat_km)
+        (age_ordinerat <= input$age_km[2] & age_ordinerat >= input$age_km[1])
       )
     
     if (input$biologic_km != "All"){
@@ -241,15 +241,15 @@ shinyServer(function(input, output){
         (ordinerat >= input$drange_charcs[1] & ordinerat <= input$drange_charcs[2]),
         (input$diagnos_charcs == "All" | (dxcat %in% input$diagnos_charcs)),
         (input$sex_charcs == "All" | kon.x == input$sex_charcs),
-        (input$age_cat_charcs == "All" | age_ordinerat_cat == input$age_cat_charcs),
+        (age_ordinerat <= input$age_charcs[2] & age_ordinerat >= input$age_charcs[1]),
         (input$region_char_cs == "All" | region == input$region_char_cs)
       ) %>% 
       merge(besoksdata, by = "patientkod") %>%
       filter(datum >= (ordinerat - 7) & datum <= utsatt) %>%
       mutate(
         diff = as.double(datum - ordinerat),
-        time_anal = cut(diff, breaks = c(-7, 30, 120, 365, 730, 1095, max(diff, na.rm = T)),
-                        labels = c(0, 75, 240, 547, 912, 1460),
+        time_anal = cut(diff, breaks = c(-7, 30, 90, 240, 480, 730, 1095, max(diff, na.rm = T)),
+                        labels = c(0, 75, 150, 365, 600, 912, 1460),
                         include.lowest = T, right = T)) %>%
       filter(time_anal == as.character(input$time_anal))
   })
@@ -432,7 +432,7 @@ shinyServer(function(input, output){
   output$KM <- renderPlotly({
     ggplotly(
       ggplot(surv.data(), aes(x = time/(365/12), y = surv, col = preparat)) + 
-        geom_step() + xlab("Days")
+        geom_step() + xlab("Months")
     )
   })
   
