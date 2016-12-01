@@ -188,6 +188,34 @@ shinyServer(function(input, output){
       rename_(.dots=setNames("time_level", input$time_unit_bio))
   })
   
+  
+  # for big table
+  n_big_bio <- reactive({
+    bigTab <- if (input$ongoing == FALSE){
+      n_ts_bio <- terapi_basdata %>%
+        filter(
+          input$biologic == "All" | preparat == input$biologic,
+          ordinerat <= input$drange_bio[2] &  ordinerat >= input$drange_bio[1]
+        ) %>%
+        group_by(diagnos_1.x, line_trt_cat, kon.x, age_ordinerat_cat) %>%
+        summarize(number = n())
+    } else {
+      drange <- floor_date(input$drange_bio, input$time_unit_bio)
+      dates <- seq(drange[1], drange[2], by = input$time_unit_bio)
+      pagaende <- do.call("rbind", lapply(dates, function(x)
+        terapi_basdata %>%
+          mutate(time_level = x) %>%
+          filter(
+            input$biologic == "All" | preparat == input$biologic,
+            ordinerat <= input$drange_bio[2] &  ordinerat >= input$drange_bio[1],
+            (ordinerat <= x) & (utsatt > x | pagaende == 1)
+          ) %>%
+          group_by(diagnos_1.x, line_trt_cat, kon.x, age_ordinerat_cat) %>%
+          summarize(number = n())))
+    }
+    bigTab
+  })
+  
   surv.data <- reactive({
     bio_km <- terapi_basdata %>%
       filter(
@@ -359,6 +387,9 @@ shinyServer(function(input, output){
     }
     table_bio 
   })
+  output$tableBig_bio <- renderDataTable({ 
+    n_big_bio()
+    })
   output$table_KM <- renderDataTable({
     surv.data()
   })

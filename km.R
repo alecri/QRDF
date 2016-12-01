@@ -10,9 +10,10 @@ surv.data <-rbind(
   with(surv.data_all, data.frame(preparat = "all", time, surv, upper, lower))
   )
 
+
 ggplotly(
-  ggplot(surv.data, aes(x = time, y = surv, col = preparat)) + 
-    geom_step() 
   #+geom_step(aes(y = lower), linetype = "dotted") +
   #geom_step(aes(y = upper), linetype = "dotted")
 )
+
+

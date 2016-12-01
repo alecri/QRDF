@@ -118,6 +118,7 @@ shinyUI(
           radioButtons("ongoing", "Number of",
                        c("started treatments"= FALSE, "ongoing treatments"= TRUE)
           ),
+          br(),
           selectInput("diagnos_bio", label = "Diagnos",
                       choices = c("All", levels(terapi_basdata$diagnos_kategori1)), multiple = FALSE,
                       selected = NULL),
@@ -143,6 +144,11 @@ shinyUI(
                                downloadButton('downloadTab_bio', 'Download table'),
                                hr(),
                                dataTableOutput("table_bio")),
+                      tabPanel("Big table", 
+                               p(" "),
+                               #downloadButton('downloadTab_bio', 'Download table'),
+                               hr(),
+                               dataTableOutput("tableBig_bio")),
                       tabPanel("Summary",
                                p("Some text"))
           )
