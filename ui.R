@@ -11,11 +11,16 @@ shinyUI(
       "Home",
       h2("Welcome to the Quality Register Drug Follow up of the Swedish Rheumatology Quality Registers"),
       br(),
-      p("Swedish Rheumatology Quality Registers (SRQ) comprise a cooperation between clinical registers in Swedish rheumatology participating in a national program for continuous follow up of patients for drug surveillance, clinical trials, health economics and clinical research and for health care quality improvement. SRQ works together with research driven pharmaceutical companies to improve patient health. To enable planning and design of specific research projects the character of the patient cohorts to be found in the SRQ database is displayed here. Data in SRQ is owned by the participating registers that perform the analyses in agreed studies aiming for scientific publication of the results.
+      p("Swedish Rheumatology Quality Registers (SRQ) comprise a cooperation 
+          between clinical registers in Swedish rheumatology participating in a 
+          national program for continuous follow up of patients for drug surveillance, clinical trials, health economics and clinical research and for health care quality improvement. SRQ works together with research driven pharmaceutical companies to improve patient health. To enable planning and design of specific research projects the character of the patient cohorts to be found in the SRQ database is displayed here. Data in SRQ is owned by the participating registers that perform the analyses in agreed studies aiming for scientific publication of the results.
         
         The data content overview displayed here comprises encoded data such as the register coverage in the population, total numbers of patients and visits, and numbers and type of patients treated with the class of immuno-modulating drugs in question and for each company such data on their own product(s)")
       ),
-    
+      br(),
+      p("The QRDF contains now both bDMARD (biologics) and tsDMARD (small molecules). 
+        Therefore, every time that the total number of biologics are described, also Otezla (apremilast) is included."),
+
     tabPanel(
       "Patients",
       
