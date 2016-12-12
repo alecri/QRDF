@@ -13,73 +13,85 @@ shinyServer(function(input, output){
   
   ## interactive user interfaces
   ## -----------------------------------------------------------------------------------------------------------------------
-  #' @@
-  ## diagnosis
-  output$diagnos_1 <- renderUI({
-    if (is.null(input$diagnos)){
-      return(NULL)
-    } else {
-      if (input$diagnos == "All") return(NULL)
-      choices = as.character(unique(basdata$diagnos_1[basdata$diagnos_kategori1 == input$diagnos]))
-      selectizeInput("sub_diag", label = "Sub diagnosis",
-                     choices = choices, multiple = TRUE, selected = choices)
-    }
-  })
-  output$diagnos_1_besok <- renderUI({
-    if (is.null(input$diagnos_besok)){
-      return(NULL)
-    } else {
-      if (input$diagnos_besok == "All") return(NULL)
-      choices = as.character(unique(besok_basdata$diagnos_1[besok_basdata$diagnos_kategori1 == input$diagnos_besok]))
-      selectizeInput("sub_diag_besok", label = "Sub diagnosis",
-                     choices = choices, multiple = TRUE, selected = choices)
-    }
-  })
-  output$diagnos_1_bio <- renderUI({
-    if (is.null(input$diagnos_bio)){
-      return(NULL)
-    } else {
-      if (input$diagnos_bio == "All") return(NULL)
-      choices = as.character(unique(terapi_basdata$diagnos_1.y[terapi_basdata$diagnos_kategori1 == input$diagnos_bio]))
-      selectizeInput("sub_diag_bio", label = "Sub diagnosis",
-                     choices = choices, multiple = TRUE, selected = choices)
-    }
-  })
+
+  ## Diagnosis
   
-  ## for sliders
-  output$slideDate <- renderUI({
-    minValue <- ifelse(input$time_unit == "month", Sys.Date() - 365.25*3, "1999-01-01")
-    sliderInput("drange", "Range limit", min = as.Date("1999-01-01"), max = (Sys.Date() - 1),
-                value = c(as.Date(minValue), (Sys.Date() - 1)))
-  })
-  output$slideDate_besok <- renderUI({
-    minValue <- ifelse(input$time_unit_besok == "month", Sys.Date() - 365.25*3, "1999-01-01")
-    sliderInput("drange_besok", "Range limit", min = as.Date("1999-01-01"), max = (Sys.Date() - 1),
-                value = c(as.Date(minValue), (Sys.Date() - 1)))
-  })
-  output$slideDate_bio <- renderUI({
-    minValue <- ifelse(input$time_unit_bio == "month", Sys.Date() - 365.25*3, "1999-01-01")
-    sliderInput("drange_bio", "Range limit", min = as.Date("1999-01-01"), max = (Sys.Date() - 1),
-                value = c(as.Date(minValue), (Sys.Date() - 1)))
-  })
-  output$slideDate_km <- renderUI({
-    minValue <- ifelse(input$biologic_km != "All", min(terapi_basdata$ordinerat[terapi_basdata$preparat == input$biologic_km]), "1999-01-01")
-    dateRangeInput("drange_km",
-                   label = "Range limit",
-                   start = as.Date(minValue), end = Sys.Date())
-  })
-  output$slideDate_charcs <- renderUI({
-    minValue <- ifelse(input$biologic_charcs != "", min(terapi_basdata$ordinerat[terapi_basdata$preparat == input$biologic_charcs]), "1999-01-01")
-    dateRangeInput("drange_charcs",
-                   label = "Range limit",
-                   start = as.Date(minValue), end = Sys.Date())
-  })
+    ## Patients
+    output$diagnos_1 <- renderUI({
+      if (is.null(input$diagnos)){
+        return(NULL)
+      } else {
+        if (input$diagnos == "All") return(NULL)
+        choices = as.character(unique(basdata$diagnos_1[basdata$diagnos_kategori1 == input$diagnos]))
+        selectizeInput("sub_diag", label = "Sub diagnosis",
+                       choices = choices, multiple = TRUE, selected = choices)
+      }
+    })
+    ## Visits
+    output$diagnos_1_besok <- renderUI({
+      if (is.null(input$diagnos_besok)){
+        return(NULL)
+      } else {
+        if (input$diagnos_besok == "All") return(NULL)
+        choices = as.character(unique(besok_basdata$diagnos_1[besok_basdata$diagnos_kategori1 == input$diagnos_besok]))
+        selectizeInput("sub_diag_besok", label = "Sub diagnosis",
+                       choices = choices, multiple = TRUE, selected = choices)
+      }
+    })
+    ##Biologics
+    output$diagnos_1_bio <- renderUI({
+      if (is.null(input$diagnos_bio)){
+        return(NULL)
+      } else {
+        if (input$diagnos_bio == "All") return(NULL)
+        choices = as.character(unique(terapi_basdata$diagnos_1.y[terapi_basdata$diagnos_kategori1 == input$diagnos_bio]))
+        selectizeInput("sub_diag_bio", label = "Sub diagnosis",
+                       choices = choices, multiple = TRUE, selected = choices)
+      }
+    })
+  
+  ## Time sliders
+    ##Patients
+    output$slideDate <- renderUI({
+      minValue <- ifelse(input$time_unit == "month", Sys.Date() - 365.25*3, "1999-01-01")
+      sliderInput("drange", "Range limit", min = as.Date("1999-01-01"), max = (Sys.Date() - 1),
+                  value = c(as.Date(minValue), (Sys.Date() - 1)))
+    })
+    ##Visits
+    output$slideDate_besok <- renderUI({
+      minValue <- ifelse(input$time_unit_besok == "month", Sys.Date() - 365.25*3, "1999-01-01")
+      sliderInput("drange_besok", "Range limit", min = as.Date("1999-01-01"), max = (Sys.Date() - 1),
+                  value = c(as.Date(minValue), (Sys.Date() - 1)))
+    })
+    ##Biologics
+    output$slideDate_bio <- renderUI({
+      minValue <- ifelse(input$time_unit_bio == "month", Sys.Date() - 365.25*3, "1999-01-01")
+      sliderInput("drange_bio", "Range limit", min = as.Date("1999-01-01"), max = (Sys.Date() - 1),
+                  value = c(as.Date(minValue), (Sys.Date() - 1)))
+    })
+    ##Disease_characteristics
+    output$slideDate_charcs <- renderUI({
+      minValue <- ifelse(input$biologic_charcs != "", min(terapi_basdata$ordinerat[terapi_basdata$preparat == input$biologic_charcs]), "1999-01-01")
+      dateRangeInput("drange_charcs",
+                     label = "Range limit",
+                     start = as.Date(minValue), end = Sys.Date())
+    })
+    ##KM
+    output$slideDate_km <- renderUI({
+      minValue <- ifelse(input$biologic_km != "All", min(terapi_basdata$ordinerat[terapi_basdata$preparat == input$biologic_km]), "1999-01-01")
+      dateRangeInput("drange_km",
+                     label = "Range limit",
+                     start = as.Date(minValue), end = Sys.Date())
+    })
+    
+
   
   
   
-  ## reactive computations
+  ## Reactive computations
   ## -----------------------------------------------------------------------------------------------------------------------
   
+  ## Patients
   n_ts <- reactive({
     basdata %>%
       ## exclude years before 1999 + interactive filtering
@@ -103,6 +115,7 @@ shinyServer(function(input, output){
       filter(input$region == "All" | number > 5)
   })
   
+  ## Visits
   n_ts_besok <- reactive({
     besok_basdata %>%
       ## exclude years before 1999 + interactive filtering
@@ -127,6 +140,7 @@ shinyServer(function(input, output){
       filter(input$region_besok == "All" | number > 5)
   })
   
+  ## Biologics
   n_ts_bio <- reactive({
     n_ts_bio <- terapi_basdata %>%
       ## exclude years before 1999 + interactive filtering
@@ -189,7 +203,7 @@ shinyServer(function(input, output){
   })
   
   
-  # for big table
+     # for big table
   n_big_bio <- reactive({
     bigTab <- if (input$ongoing == FALSE){
       n_ts_bio <- terapi_basdata %>%
@@ -216,37 +230,7 @@ shinyServer(function(input, output){
     bigTab
   })
   
-  surv.data <- reactive({
-    bio_km <- terapi_basdata %>%
-      filter(
-        time > 0,
-        utsatt2 <= Sys.Date(),
-        ordinerat >= input$drange_km[1] & ordinerat <= input$drange_km[2],
-        (input$line_km == 0 | line_trt == input$line_km | (input$line_km == 3 & line_trt >= 3)),
-        (input$region_km == "All" | region == input$region_km),
-        (input$diagnos_km == "All" | dxcat == input$diagnos_km),
-        (input$sex_km == "All" | kon.x == input$sex_km),
-        (age_ordinerat <= input$age_km[2] & age_ordinerat >= input$age_km[1])
-      )
-    
-    if (input$biologic_km != "All"){
-      datemin_drug <- min(bio_km$ordinerat[bio_km$preparat == input$biologic_km])
-      bio_km <- bio_km %>% filter(ordinerat >= datemin_drug)
-    }
-    
-    surv.data <- data.frame()
-    surv.data <- rbind(
-      with(summary(survfit(Surv(time, status) ~ 1, data = bio_km)), data.frame(preparat = "All", time, surv, n.risk, n.event))
-    )
-    if (input$biologic_km != "All"){
-      surv.data <- rbind(surv.data,
-                         with(summary(survfit(Surv(time, status) ~ 1,
-                                              data = subset(bio_km, preparat == input$biologic_km))),
-                              data.frame(preparat = input$biologic_km, time, surv, n.risk, n.event)))
-    }
-    surv.data
-  })
-  
+  ## Disease characteristics
   ## variable to summarize in tab disease characteristics
   list_charcs <- reactive({
     list_charcs <- list("eq5d", "smarta", "patientens_globala", "lakarbedomning",
@@ -260,7 +244,33 @@ shinyServer(function(input, output){
     }
     list_charcs
   })
+  list_charcs_labels <- reactive({
+    list_charcs <- list("EQ-5D", "Pain", "Patient global health", "Doctor evaluation",
+                        "ESR", "CRP", "HAQ")
+    if (input$diagnos_charcs %in% c("RA", "PSA")){
+      list_charcs <- c(list_charcs, "Swollen joints", "Tender joints", "DAS28", "DAS28-CRP")
+    }
+    if (input$diagnos_charcs %in% c("SPA", "AS")){
+      list_charcs <- c(list_charcs, "66 swollen joints", "68 tender joints", "BASDAI",
+                       "ASDAS_SR", "ASDAS_CRP")
+    }
+    list_charcs
+  })
   
+  n_tab <- reactive({
+    terapi_basdata %>%
+      filter(
+        (preparat == input$biologic_charcs),
+        (ordinerat >= input$drange_charcs[1] & ordinerat <= input$drange_charcs[2]),
+        (input$diagnos_charcs == "All" | (dxcat %in% input$diagnos_charcs)),
+        (input$sex_charcs == "All" | kon.x == input$sex_charcs),
+        (age_ordinerat <= input$age_charcs[2] & age_ordinerat >= input$age_charcs[1]),
+        (input$region_char_cs == "All" | region == input$region_char_cs),
+        (time >= input$time_anal)
+      ) %>%
+      group_by(line_trt_cat) %>%
+      count()
+  })
   n_charcs <- reactive({
     if (input$biologic_charcs == "") return(NULL)
     terapi_basdata %>%
@@ -273,10 +283,10 @@ shinyServer(function(input, output){
         (input$region_char_cs == "All" | region == input$region_char_cs)
       ) %>% 
       merge(besoksdata, by = "patientkod") %>%
-      filter(datum >= (ordinerat - 7) & datum <= utsatt) %>%
+      filter(datum >= (ordinerat - 30) & datum <= utsatt2) %>%
       mutate(
         diff = as.double(datum - ordinerat),
-        time_anal = cut(diff, breaks = c(-7, 30, 90, 240, 480, 730, 1095, max(diff, na.rm = T)),
+        time_anal = cut(diff, breaks = c(-30, 7, 90, 240, 480, 730, 1095, max(diff, na.rm = T)),
                         labels = c(0, 75, 150, 365, 600, 912, 1460),
                         include.lowest = T, right = T)) %>%
       filter(time_anal == as.character(input$time_anal))
@@ -356,10 +366,48 @@ shinyServer(function(input, output){
                          t(index[-1])
                        }
                      })))
-    colnames(medians) <- colnames(addinfo) <- c("variable", "1st line", "2nd line", "3+line")
-    medians <- rbind(addinfo, medians)
+    n_tab <- data.frame(rbind(c("n total", n_tab()$n)))
+    colnames(medians) <- colnames(addinfo) <- colnames(n_tab) <- c("variable", "1st line", "2nd line", "3+line")
+    medians <- rbind(n_tab, addinfo, medians)
     medians
   })
+  
+  
+  ## KM
+  
+  
+  surv.data <- reactive({
+    bio_km <- terapi_basdata %>%
+      filter(
+        time > 0,
+        utsatt2 <= Sys.Date(),
+        ordinerat >= input$drange_km[1] & ordinerat <= input$drange_km[2],
+        (input$line_km == 0 | line_trt == input$line_km | (input$line_km == 3 & line_trt >= 3)),
+        (input$region_km == "All" | region == input$region_km),
+        (input$diagnos_km == "All" | dxcat == input$diagnos_km),
+        (input$sex_km == "All" | kon.x == input$sex_km),
+        (age_ordinerat <= input$age_km[2] & age_ordinerat >= input$age_km[1])
+      )
+    
+    if (input$biologic_km != "All"){
+      datemin_drug <- min(bio_km$ordinerat[bio_km$preparat == input$biologic_km])
+      bio_km <- bio_km %>% filter(ordinerat >= datemin_drug)
+    }
+    
+    surv.data <- data.frame()
+    surv.data <- rbind(
+      with(summary(survfit(Surv(time, status) ~ 1, data = bio_km)), data.frame(preparat = "All", days = time, surv, n.risk, n.event))
+    )
+    if (input$biologic_km != "All"){
+      surv.data <- rbind(surv.data,
+                         with(summary(survfit(Surv(time, status) ~ 1,
+                                              data = subset(bio_km, preparat == input$biologic_km))),
+                              data.frame(preparat = input$biologic_km, days = time, surv, n.risk, n.event)))
+    }
+    surv.data
+  })
+  
+
   
   
   ## rendering output
@@ -414,7 +462,10 @@ shinyServer(function(input, output){
     # )
     # print(xtable(medians_charcs()), type = "html",
     #       include.rownames = FALSE)
-    medians_tab()
+    tab <- medians_tab()
+    tab$variable <- c("N total", "N patients with visit", "Age",  "% of Female",  "% of concomitant DMARD",
+                  "% of concomitant MTX", "% of concomitant NSAID", "% of concomitant cortison", list_charcs_labels())
+    tab
   }
   )
   
@@ -462,7 +513,7 @@ shinyServer(function(input, output){
   
   output$KM <- renderPlotly({
     ggplotly(
-      ggplot(surv.data(), aes(x = time/(365/12), y = surv, col = preparat)) + 
+      ggplot(surv.data(), aes(x = days/(365/12), y = surv, col = preparat)) + 
         geom_step() + xlab("Months")
     )
   })
