@@ -13,7 +13,7 @@ shinyServer(function(input, output){
   
   ## interactive user interfaces
   ## -----------------------------------------------------------------------------------------------------------------------
-  
+  #' @@
   ## diagnosis
   output$diagnos_1 <- renderUI({
     if (is.null(input$diagnos)){
