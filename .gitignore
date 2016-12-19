@@ -1,4 +1,9 @@
 .Rproj.user
 .Rhistory
 .RData
+<<<<<<< HEAD
 .Ruserdata
+=======
+.Rdata
+www/*.Rdata
+>>>>>>> ceb2be909352aba84b6020335072322c959bf65f
